@@ -13,8 +13,8 @@ let repairSquad = {
         if (creep.memory.building == false) {
             const buildings = creep.room.find(FIND_STRUCTURES, {
                 filter: (structure) => {
-                    return (structure.structureType == structure.structureType == STRUCTURE_CONTAINER) &&
-                        structure.energy > 50;
+                    return (structure.structureType == STRUCTURE_CONTAINER) &&
+                        structure.store[RESOURCE_ENERGY] > 0
                 }
             });
             if (buildings.length > 0) {
