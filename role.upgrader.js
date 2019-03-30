@@ -17,23 +17,24 @@ var roleUpgrader = {
         } else {
             const buildings = creep.room.find(FIND_STRUCTURES, {
                 filter: (structure) => {
-                    return (structure.structureType == STRUCTURE_CONTAINER) &&
-                        structure.store[RESOURCE_ENERGY] > 0
+                    return (structure.structureType == STRUCTURE_CONTAINER && structure.id != "5c9a24e5cac6ca1076c66c3f" || structure.structureType == STRUCTURE_STORAGE) &&
+                        structure.store[RESOURCE_ENERGY] > 0 && structure.id != "5c9a24e5cac6ca1076c66c3f"
                 }
             });
-            if (buildings.length > 0) {
-                if (creep.withdraw(buildings[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(buildings[0]);
+            let closest = creep.pos.findClosestByPath(buildings);
+            if (closest) {
+                if (creep.withdraw(closest, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                    creep.moveTo(closest);
                 }
 
             } else {
-                const targets = creep.room.find(FIND_DROPPED_RESOURCES);
-                if (targets.length) {
-                    creep.moveTo(targets[0], {});
-                    creep.pickup(targets[0])
+                const targets = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES);
+                if (targets) {
+                    creep.moveTo(targets);
+                    creep.pickup(targets)
                 }
             }
-            
+
         }
     }
 };
