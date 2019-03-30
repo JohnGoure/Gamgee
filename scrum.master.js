@@ -11,38 +11,55 @@ let scrumMaster = {
 
 
         if (!creep.memory.building) {
-            const buildings = creep.room.find(FIND_STRUCTURES, {
-                filter: (structure) => {
-                    return (structure.structureType == structure.structureType == STRUCTURE_CONTAINER) &&
-                        structure.store[RESOURCE_ENERGY] > 0
-                }
-            });
-            if (buildings.length > 0) {
-                if (creep.withdraw(buildings[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(buildings[0]);
-                }
+            findEnergy(creep);
+        } else {
+            restoreEnergy(creep);
+        }
+    }
+}
 
-            } else  {
-                const targets = creep.room.find(FIND_DROPPED_RESOURCES);
-                if (targets.length) {
-                    creep.moveTo(targets[0], {});
-                    creep.pickup(targets[0])
-                }
-            }
-         } else {
-                const buildings = creep.room.find(FIND_STRUCTURES, {
-                    filter: (structure) => {
-                        return (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN || structure.structureType == STRUCTURE_TOWER) &&
-                            structure.energy < structure.energyCapacity;
-                    }
-                });
-                if (buildings.length > 0) {
-                    if (creep.transfer(buildings[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(buildings[0], {});
-                    }
-                }
-            }
+function restoreEnergy(creep) {
+    const buildings = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+        filter: (structure) => {
+            return (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN) &&
+                structure.energy < structure.energyCapacity;
+        }
+    });
+    if (buildings) {
+        if (creep.transfer(buildings, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(buildings);
+        }
+    }
+}
+
+function findEnergy(creep) {
+    const droppedEnergy = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES);
+    const storedEnergyContainers = creep.room.find(FIND_STRUCTURES, {
+        filter: (structure) => {
+            return (structure.structureType == STRUCTURE_CONTAINER || structure.structureType == STRUCTURE_STORAGE) &&
+                structure.store[RESOURCE_ENERGY] > 0
+        }
+    });
+    const closestEnergyContainer = creep.pos.findClosestByPath(storedEnergyContainers);
+    if (closestEnergyContainer) {
+        getStoredEnergy(creep, closestEnergyContainer);
+    } else {
+        if (droppedEnergy) {
+            getDroppedEnergy(creep, droppedEnergy);
         }
     }
 
-    module.exports = scrumMaster;
+}
+
+function getDroppedEnergy(creep, target) {
+    creep.moveTo(target);
+    creep.pickup(target);
+}
+
+function getStoredEnergy(creep, target) {
+    if (creep.withdraw(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+        creep.moveTo(target);
+    }
+}
+
+module.exports = scrumMaster;
