@@ -1,12 +1,12 @@
 let digger = {
-    run: function(creep) {
+    run: function (creep) {
         if (creep.carry.energy < creep.carryCapacity) {
             var sources = creep.room.find(FIND_SOURCES);
             let source = Game.getObjectById(creep.memory.assignedSource);
             if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(source);
             }
-            
+
         } else {
             if (creep.role == 'digger2') {
                 let storage = Game.getObjectById('5c9949238bd7934566785556');
