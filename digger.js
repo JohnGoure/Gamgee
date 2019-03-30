@@ -8,15 +8,20 @@ let digger = {
             }
 
         } else {
-            if (creep.role == 'digger2') {
+            if (creep.memory.role == 'digger2') {
                 let storage = Game.getObjectById('5c9949238bd7934566785556');
-                creep.transfer(storage, resourceType);
+                creep.transfer(storage, RESOURCE_ENERGY, creep.carryCapacity);
+                if (storage.store[RESOURCE_ENERGY] >= storage.storeCapacity - 44) {
+                    creep.drop(RESOURCE_ENERGY, creep.carryCapacity)
+                }
             }
-            if (creep.role == 'digger1') {
+            if (creep.memory.role == 'digger1') {
                 let storage = Game.getObjectById('5c99533efef79118dc4e76ad');
-                creep.transfer(storage, resourceType);
+                creep.transfer(storage, RESOURCE_ENERGY, creep.carryCapacity);
+                if (storage.store[RESOURCE_ENERGY] >= storage.storeCapacity - 44) {
+                    creep.drop(RESOURCE_ENERGY, creep.carryCapacity)
+                }
             }
-            creep.drop(RESOURCE_ENERGY, creep.carryCapacity)
         }
     }
 }
