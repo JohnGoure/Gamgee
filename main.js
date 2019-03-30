@@ -3,15 +3,16 @@
 
 let spawnMaster = require('spawn.master');
 let ControlFreak = require('control.freak');
+let Tower = require('tower');
 
 module.exports.loop = function () {
-    
-    for(var name in Memory.creeps) {
-        if(!Game.creeps[name]) {
+
+    for (var name in Memory.creeps) {
+        if (!Game.creeps[name]) {
             delete Memory.creeps[name];
         }
     }
-    
+    Tower.run('E28S31');
     spawnMaster.run();
     ControlFreak.run();
 }
