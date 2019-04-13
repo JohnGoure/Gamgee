@@ -5,6 +5,7 @@ let roleScrumMaster = require('scrum.master');
 let roleDefender = require('defender');
 let roleRepairMan = require('repair.squad');
 let roleTransporter = require('transporter');
+let roleManager = require('role.manager');
 
 let controlFreak = {
     run: function () {
@@ -31,6 +32,9 @@ let controlFreak = {
             if (creep.memory.role == 'repair_squad') {
 
                 roleRepairMan.run(creep);
+            }
+            if (creep.memory.role == 'manager') {
+                roleManager.run(creep);
             }
         }
     }

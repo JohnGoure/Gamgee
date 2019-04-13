@@ -11,7 +11,7 @@ let repairSquad = {
         if (creep.memory.building == false) {
             const buildings = creep.room.find(FIND_STRUCTURES, {
                 filter: (structure) => {
-                    return ((structure.id != '5c9a24e5cac6ca1076c66c3f' || structure.id != '5c9963dcc9db991063d82dfe') && (structure.structureType == STRUCTURE_STORAGE || structure.structureType == STRUCTURE_CONTAINER) &&
+                    return ((structure.id != '5cad579b3b636f1583e1895e' || structure.id != '5cad5a17adfc20719aa12323') && (structure.structureType == STRUCTURE_STORAGE || structure.structureType == STRUCTURE_CONTAINER) &&
                         structure.store[RESOURCE_ENERGY] > 0)
                 }
             });
@@ -32,13 +32,14 @@ let repairSquad = {
             creep.memory.building = true;
             var repairitnow = creep.room.find(FIND_STRUCTURES, {
                 filter: (structure) => {
-                    return (structure.hits < 650 && structure.hits > 0)
+                    return (structure.hits < structure.hitsMax / 2 && structure.hits > 0 && structure.structureType != STRUCTURE_WALL && structure.structureType != STRUCTURE_RAMPART)
                 }
             });
-
+            
             if (repairitnow.length > 0) {
-                if (creep.repair(repairitnow[0]) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(repairitnow[0]);
+                closest = creep.pos.findClosestByRange(repairitnow);
+                if (creep.repair(closest) == ERR_NOT_IN_RANGE) {
+                    creep.moveTo(closest);
                 }
             } else {
 
@@ -59,15 +60,11 @@ let repairSquad = {
                         creep.moveTo(repairit[0]);
                     }
                 } else {
-
                     if (repairwall.length > 0) {
-                        if (creep.repair(repairwall[repairwall.length - 1]) == ERR_NOT_IN_RANGE) { //omgekeerde volgorde zodat ramparts eerst gerepaird worden
+                        if (creep.repair(repairwall[repairwall.length - 1]) == ERR_NOT_IN_RANGE) {
                             creep.moveTo(repairwall[0]);
                         }
                     }
-                    /*else {
-Worker.run(creep); // so it will alway's will be busy. DO NOT FORGET TO IMPORT(var roleHarvester = require('role.harvester');) IT 
-}*/
                 }
             }
         }

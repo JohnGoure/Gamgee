@@ -27,12 +27,12 @@ let transporter = {
 }
 
 function findEnergy(creep) {
-    const droppedEnergy = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES);
+    const droppedEnergy = creep.pos.findClosestByPath(FIND_DROPPED_ENERGY);
     const storedEnergyContainers = creep.room.find(FIND_STRUCTURES, {
         filter: (structure) => {
-            return (structure.id == "5c99533efef79118dc4e76ad" &&
-                structure.store[RESOURCE_ENERGY] > 450 || structure.id == "5c9949238bd7934566785556" &&
-                structure.store[RESOURCE_ENERGY] > 450
+            return (structure.id == "5cad5f10b5f63036db0a2f39" &&
+                structure.store[RESOURCE_ENERGY] > 350 || structure.id == "5cad5bd3b8c230403962c7c7" &&
+                structure.store[RESOURCE_ENERGY] > 350
             )
         }
     });
@@ -60,8 +60,8 @@ function getStoredEnergy(creep, target) {
 
 function transportEnergyToStorage(creep) {
     const roomStorage = creep.room.storage;
-    const scrumMasterStorage = Game.getObjectById("5c9a24e5cac6ca1076c66c3f");
-    const upgradeStorage = Game.getObjectById("5c9963dcc9db991063d82dfe");
+    const scrumMasterStorage = Game.getObjectById("5cad579b3b636f1583e1895e");
+    const upgradeStorage = Game.getObjectById("5cad5a17adfc20719aa12323");
     if (scrumMasterStorage.store[RESOURCE_ENERGY] < CONTAINER_CAPACITY) {
         if (creep.transfer(scrumMasterStorage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
             creep.moveTo(scrumMasterStorage);
@@ -70,7 +70,7 @@ function transportEnergyToStorage(creep) {
         if (creep.transfer(upgradeStorage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
             creep.moveTo(upgradeStorage);
         }
-    } else if (creep.transfer(roomStorage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+    } else if (creep.transfer(roomStorage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE || creep.transfer(roomStorage, RESOURCE_GHODIUM_OXIDE) == ERR_NOT_IN_RANGE) {
         creep.moveTo(roomStorage);
     }
 }
@@ -79,7 +79,7 @@ function findFullestContainer(creep) {
     const storedEnergyContainers = creep.room.find(FIND_STRUCTURES, {
         filter: (structure) => {
             return (
-                structure.id == "5c99533efef79118dc4e76ad" || structure.id == "5c9949238bd7934566785556" &&
+                structure.id == "5cad5f10b5f63036db0a2f39" || structure.id == "5cad5bd3b8c230403962c7c7" &&
                 structure.store[RESOURCE_ENERGY] > 0
             )
         }

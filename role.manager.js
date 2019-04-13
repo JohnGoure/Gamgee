@@ -1,8 +1,6 @@
-let Transport = require('transporter');
-
-let roleWorker = {
-  run: function (creep) {
-    if (creep.memory.working && creep.carry.energy == 0) {
+let roleManager = {
+    run: function(creep) {
+        if (creep.memory.working && creep.carry.energy == 0) {
       creep.memory.working = false;
     }
     if (!creep.memory.working && creep.carry.energy == creep.carryCapacity) {
@@ -13,7 +11,7 @@ let roleWorker = {
     if (creep.memory.working == false) {
       const buildings = creep.room.find(FIND_STRUCTURES, {
         filter: (structure) => {
-          return ((structure.id != '5cad579b3b636f1583e1895e' && structure.id != '5cad5a17adfc20719aa12323') && (structure.structureType == STRUCTURE_STORAGE || structure.structureType == STRUCTURE_CONTAINER) &&
+          return ((structure.id != '5cad579b3b636f1583e1895e' || structure.id != '5cad5a17adfc20719aa12323') && (structure.structureType == STRUCTURE_STORAGE || structure.structureType == STRUCTURE_CONTAINER) &&
             structure.store[RESOURCE_ENERGY] > 0)
         }
       });
@@ -30,12 +28,7 @@ let roleWorker = {
           creep.pickup(resource);
         }
       }
-    } else if (targets.length > 0) {
-      creep.memory.working = true;
-      if (creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
-        creep.moveTo(targets[0]);
-      }
-    } else {
+    }  else {
       creep.memory.working = true;
       const buildings = creep.room.find(FIND_STRUCTURES, {
         filter: (structure) => {
@@ -49,7 +42,7 @@ let roleWorker = {
         }
       }
     }
-  }
-};
+    }
+}
 
-module.exports = roleWorker;
+module.exports = roleManager;

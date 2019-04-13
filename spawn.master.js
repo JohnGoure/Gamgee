@@ -8,11 +8,12 @@ let spawnMaster = {
         let defenders = _.filter(Game.creeps, (creep) => creep.memory.role == 'attacker');
         let repairers = _.filter(Game.creeps, (creep) => creep.memory.role == 'repair_squad');
         let transporters = _.filter(Game.creeps, (creep) => creep.memory.role == 'transporter');
+        let manager = _.filter(Game.creeps, (creep) => creep.memory.role == 'manager');
 
         const rcl1DiggerDuties = [WORK, CARRY, MOVE];
         const rcl2DiggerDuties = [WORK, WORK, WORK, CARRY, MOVE];
         const rcl3DiggerDuties = [WORK, WORK, WORK, WORK, WORK, CARRY, MOVE];
-        const rcl4DiggerDuties = [WORK, WORK, WORK, WORK, WORK, WORK, WORK, MOVE, CARRY];
+        const rcl4DiggerDuties = [WORK, WORK, WORK, WORK, WORK, WORK, WORK, MOVE, MOVE, MOVE, CARRY];
 
         if (diggers.length < 1) {
             let newName = 'Digger' + Game.time;
@@ -42,16 +43,21 @@ let spawnMaster = {
             const rcl3ScrumDuties = [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE];
             const rcl4ScrumDuties = [MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE];
 
-            if (scrumMasters.length < 1) {
+            if (scrumMasters.length < 2) {
                 var newName = 'Scrum_Master' + Game.time;
                 Game.spawns['Spawn1'].spawnCreep(rcl4ScrumDuties, newName, {
                     memory: {
                         role: 'scrum_master'
                     }
-                })
+                });
+            }
+            
+            if (manager.length < 1) {
+                let newName = 'Manager' + Game.time;
+                Game.spawns['Spawn1'].spawnCreep([CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE], newName, {memory: {role: 'manager'}});
             }
 
-            if (upgraders.length < 1) {
+            if (upgraders.length < 2) {
                 let newName = 'Upgrader' + Game.time;
                 Game.spawns['Spawn1'].spawnCreep([WORK, WORK, WORK, WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY], newName, {
                     memory: {
@@ -80,7 +86,7 @@ let spawnMaster = {
 
             if (repairers.length < 1) {
                 var newName = 'minimum_wage_employee' + Game.time;
-                Game.spawns['Spawn1'].spawnCreep([WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY], newName, {
+                Game.spawns['Spawn1'].spawnCreep([WORK, WORK, WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY], newName, {
                     memory: {
                         role: 'repair_squad'
                     }
