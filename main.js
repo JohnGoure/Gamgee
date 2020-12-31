@@ -12,7 +12,12 @@ module.exports.loop = function () {
             delete Memory.creeps[name];
         }
     }
-    Tower.run('E28S31');
-    spawnMaster.run();
+    
+        
+        for (var r in Game.rooms) {
+            Tower.run(r);
+            spawnMaster.run(Game.rooms[r].controller.level);
+        }
+        
     ControlFreak.run();
 }

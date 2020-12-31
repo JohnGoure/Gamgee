@@ -1,5 +1,5 @@
 let spawnMaster = {
-    run: function () {
+    run: function (controllerLevel) {
         let upgraders = _.filter(Game.creeps, (creep) => creep.memory.role == 'upgrader');
         let workers = _.filter(Game.creeps, (creep) => creep.memory.role == 'worker');
         let diggers = _.filter(Game.creeps, (creep) => creep.memory.role == 'digger1');
@@ -15,10 +15,29 @@ let spawnMaster = {
         const rcl3DiggerDuties = [WORK, WORK, WORK, WORK, WORK, CARRY, MOVE];
         const rcl4DiggerDuties = [WORK, WORK, WORK, WORK, WORK, WORK, WORK, MOVE, MOVE, MOVE, CARRY];
 
+        const rcl1ScrumDuties = [CARRY, MOVE, MOVE];
+        const rcl2ScrumDuties = [CARRY, CARRY, CARRY, MOVE, MOVE, MOVE];
+        const rcl3ScrumDuties = [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE];
+        const rcl4ScrumDuties = [MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE];
+        
+        var rclDiggerDuties = rcl1DiggerDuties;
+        var rclScrumDuties = rcl1ScrumDuties;
+        
+        if (controllerLevel == 2) {
+            rclDiggerDuties = rcl2DiggerDuties;
+            rclScrumDuties = rcl2ScrumDuties;
+        } else if (controllerLevel == 3) {
+            rclDiggerDuties = rcl3DiggerDuties;
+            rclScrumDuties = rcl3ScrumDuties;
+        } else if (controllerLevel == 4) {
+            rclDiggerDuties = rcl4DiggerDuties;
+            rclScrumDuties = rcl4ScrumDuties;
+        }
+
         if (diggers.length < 1) {
             let newName = 'Digger' + Game.time;
             const sources = Game.spawns['Spawn1'].room.find(FIND_SOURCES);
-            Game.spawns['Spawn1'].spawnCreep(rcl4DiggerDuties, newName, {
+            Game.spawns['Spawn1'].spawnCreep(rclDiggerDuties, newName, {
                 memory: {
                     role: 'digger1',
                     assignedSource: sources[0].id
@@ -29,7 +48,7 @@ let spawnMaster = {
         if (diggers2.length < 1) {
             let newName = 'Digger' + Game.time;
             const sources = Game.spawns['Spawn1'].room.find(FIND_SOURCES);
-            Game.spawns['Spawn1'].spawnCreep(rcl4DiggerDuties, newName, {
+            Game.spawns['Spawn1'].spawnCreep(rclDiggerDuties, newName, {
                 memory: {
                     role: 'digger2',
                     assignedSource: sources[1].id
@@ -38,14 +57,9 @@ let spawnMaster = {
         }
 
         if (diggers.length >= 1 && diggers2.length >= 1) {
-            const rcl1ScrumDuties = [CARRY, MOVE, MOVE];
-            const rcl2ScrumDuties = [CARRY, CARRY, CARRY, MOVE, MOVE, MOVE];
-            const rcl3ScrumDuties = [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE];
-            const rcl4ScrumDuties = [MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE];
-
             if (scrumMasters.length < 2) {
                 var newName = 'Scrum_Master' + Game.time;
-                Game.spawns['Spawn1'].spawnCreep(rcl4ScrumDuties, newName, {
+                Game.spawns['Spawn1'].spawnCreep(rclScrumDuties, newName, {
                     memory: {
                         role: 'scrum_master'
                     }
@@ -57,9 +71,9 @@ let spawnMaster = {
                 Game.spawns['Spawn1'].spawnCreep([CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE], newName, {memory: {role: 'manager'}});
             }
 
-            if (upgraders.length < 2) {
+            if (upgraders.length < 1) {
                 let newName = 'Upgrader' + Game.time;
-                Game.spawns['Spawn1'].spawnCreep([WORK, WORK, WORK, WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY], newName, {
+                Game.spawns['Spawn1'].spawnCreep([WORK, WORK, WORK, WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY], newName, {
                     memory: {
                         role: 'upgrader'
                     }
