@@ -30,7 +30,6 @@ let controlFreak = {
                 roleDefender.run(creep);
             }
             if (creep.memory.role == 'repair_squad') {
-
                 roleRepairMan.run(creep);
             }
             if (creep.memory.role == 'manager') {
