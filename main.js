@@ -1,9 +1,9 @@
 // Game.spawns['Spawn1'].room.createConstructionSite( 23, 22, STRUCTURE_TOWER );
 // Game.spawns['Spawn1'].room.controller.activateSafeMode();
 
-let spawnMaster = require('spawn.master');
-let ControlFreak = require('control.freak');
-let Tower = require('tower');
+let spawnMaster = require("spawn.master");
+let ControlFreak = require("control.freak");
+let Tower = require("tower");
 
 module.exports.loop = function () {
 
@@ -12,12 +12,11 @@ module.exports.loop = function () {
             delete Memory.creeps[name];
         }
     }
-    
-        
-        for (var r in Game.rooms) {
-            Tower.run(r);
-            spawnMaster.run(Game.rooms[r].controller.level);
-        }
+
+    for (var roomName in Game.rooms) {
+        Tower.run(roomName);
+        spawnMaster.run(Game.rooms[roomName].controller.level);
+    }
         
     ControlFreak.run();
 }
