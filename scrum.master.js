@@ -1,7 +1,5 @@
 let scrumMaster = {
     run: function (creep) {
-        const spawn = Game.spawns['Spawn1'];
-
         if (creep.memory.building && creep.carry.energy == 0) {
             creep.memory.building = false;
         }
@@ -9,10 +7,10 @@ let scrumMaster = {
             creep.memory.building = true;
         }
 
-
         if (!creep.memory.building) {
             findEnergy(creep);
-        } else {
+        } 
+        else {
             restoreEnergy(creep);
         }
     }
