@@ -15,7 +15,7 @@ module.exports.loop = function () {
 
     for (var roomName in Game.rooms) {
         Tower.run(roomName);
-        spawnMaster.run();
+        spawnMaster.run(roomName);
     }
         
     ControlFreak.run();
