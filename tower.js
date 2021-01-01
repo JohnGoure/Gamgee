@@ -18,19 +18,16 @@ let towerDefense = {
         if (hostileHealers.length > 0 && healerHit == false) {
             towers.forEach(tower => tower.attack(hostileHealers[0]));
             healerHit = true;
-            console.log("ALERT!!!! WE ARE UNDER ATTACK!!!!! ALERT!!!! WE ARE UNDER ATTACK!!!!! ALERT!!!! WE ARE UNDER ATTACK!!!!! ALERT!!!! WE ARE UNDER ATTACK!!!!! ");
         }
         //if there are hostileAttackers - attakc them 
         else if (hostileAttackers.length > 0) {
             towers.forEach(tower => tower.attack(hostileAttackers[0]));
             healerHit = false;
-            console.log("ALERT!!!! WE ARE UNDER ATTACK!!!!! ALERT!!!! WE ARE UNDER ATTACK!!!!! ALERT!!!! WE ARE UNDER ATTACK!!!!! ALERT!!!! WE ARE UNDER ATTACK!!!!! ");
         }
         //if there are ANY Hostiles - attakc them 
         else if (hostiles.length > 0) {
             towers.forEach(tower => tower.attack(hostiles[0]));
             healerHit = false;
-            console.log("ALERT!!!! WE ARE UNDER ATTACK!!!!! ALERT!!!! WE ARE UNDER ATTACK!!!!! ALERT!!!! WE ARE UNDER ATTACK!!!!! ALERT!!!! WE ARE UNDER ATTACK!!!!! ");
         }
         //if there are no hostiles.... 
         if (hostiles.length === 0) {
@@ -50,7 +47,7 @@ let towerDefense = {
 
                     var repairitnow = towers[i].pos.findClosestByRange(FIND_STRUCTURES, {
                         filter: (s) => {
-                            return (s.hits < s.hitsMax / 2000 && s.hits > 0)
+                            return (s.hits < s.hitsMax / 2000 && s.hits > 0);
                         }
                     });
                     //Find the closest damaged Structure
@@ -58,7 +55,6 @@ let towerDefense = {
                         filter: (s) => s.hits < s.hitsMax / 1000 && s.structureType != STRUCTURE_WALL
                     });
                     if (repairitnow) {
-                        console.log(repairitnow);
                         towers[i].repair(repairitnow);
                     } else if (closestDamagedStructure) {
                         towers[i].repair(closestDamagedStructure);

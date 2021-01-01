@@ -1,8 +1,8 @@
-let ScrumMaster = require('scrum.master');
+let ScrumMaster = require("scrum.master");
 
 let transporter = {
     run: function (creep) {
-        let scrumMasters = _.filter(Game.creeps, (creep) => creep.memory.role == 'scrum_master');
+        let scrumMasters = _.filter(Game.creeps, (creep) => creep.memory.role == "scrum_master");
 
         // If there isn't a scrum master the transporter becomes the scrum master.
         if (scrumMasters.length == 0) {
@@ -33,7 +33,7 @@ function findEnergy(creep) {
             return (structure.id == "5cad5f10b5f63036db0a2f39" &&
                 structure.store[RESOURCE_ENERGY] > 350 || structure.id == "5cad5bd3b8c230403962c7c7" &&
                 structure.store[RESOURCE_ENERGY] > 350
-            )
+            );
         }
     });
     const closestEnergyContainer = creep.pos.findClosestByPath(storedEnergyContainers);
@@ -44,7 +44,6 @@ function findEnergy(creep) {
             getDroppedEnergy(creep, droppedEnergy);
         }
     }
-
 }
 
 function getDroppedEnergy(creep, target) {
@@ -81,14 +80,14 @@ function findFullestContainer(creep) {
             return (
                 structure.id == "5cad5f10b5f63036db0a2f39" || structure.id == "5cad5bd3b8c230403962c7c7" &&
                 structure.store[RESOURCE_ENERGY] > 0
-            )
+            );
         }
     });
     if (storedEnergyContainers.length == 2) {
         if (storedEnergyContainers[0].store[RESOURCE_ENERGY] > storedEnergyContainers[1].store[RESOURCE_ENERGY]) {
             return storedEnergyContainers[0].store[RESOURCE_ENERGY];
         } else {
-            return storedEnergyContainers[1].store[RESOURCE_ENERGY]
+            return storedEnergyContainers[1].store[RESOURCE_ENERGY];
         }
     } else {
         return null;
