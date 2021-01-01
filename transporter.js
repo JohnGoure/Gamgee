@@ -7,18 +7,20 @@ let transporter = {
         // If there isn't a scrum master the transporter becomes the scrum master.
         if (scrumMasters.length == 0) {
             ScrumMaster.run(creep);
-        } else {
+        } 
+        else {
             if (creep.memory.transporting && creep.carry.energy == 0) {
                 creep.memory.transporting = false;
             }
+
             if (!creep.memory.transporting && creep.carry.energy == creep.carryCapacity) {
                 creep.memory.transporting = true;
             }
 
-
             if (!creep.memory.transporting) {
                 findEnergy(creep);
-            } else {
+            }
+            else {
                 creep.memory.transporting = true;
                 transportEnergyToStorage(creep);
             }
@@ -27,7 +29,7 @@ let transporter = {
 }
 
 function findEnergy(creep) {
-    const droppedEnergy = creep.pos.findClosestByPath(FIND_DROPPED_ENERGY);
+    const droppedEnergy = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES);
     const storedEnergyContainers = creep.room.find(FIND_STRUCTURES, {
         filter: (structure) => {
             return (structure.id == "5cad5f10b5f63036db0a2f39" &&
@@ -61,11 +63,11 @@ function transportEnergyToStorage(creep) {
     const roomStorage = creep.room.storage;
     const scrumMasterStorage = Game.getObjectById("5cad579b3b636f1583e1895e");
     const upgradeStorage = Game.getObjectById("5cad5a17adfc20719aa12323");
-    if (scrumMasterStorage.store[RESOURCE_ENERGY] < CONTAINER_CAPACITY) {
+    if (scrumMasterStorage != null && scrumMasterStorage.store[RESOURCE_ENERGY] < CONTAINER_CAPACITY) {
         if (creep.transfer(scrumMasterStorage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
             creep.moveTo(scrumMasterStorage);
         }
-    } else if (upgradeStorage.store[RESOURCE_ENERGY] < CONTAINER_CAPACITY) {
+    } else if (upgradeStorage != null && upgradeStorage.store[RESOURCE_ENERGY] < CONTAINER_CAPACITY) {
         if (creep.transfer(upgradeStorage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
             creep.moveTo(upgradeStorage);
         }
