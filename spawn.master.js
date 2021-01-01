@@ -1,4 +1,4 @@
-let controllerLevel = Game.rooms[roomName].controller.level;
+let controllerLevel = 1
 
 let upgraders = _.filter(Game.creeps, (creep) => creep.memory.role == 'upgrader');
 let workers = _.filter(Game.creeps, (creep) => creep.memory.role == 'worker');
@@ -11,7 +11,8 @@ let transporters = _.filter(Game.creeps, (creep) => creep.memory.role == 'transp
 let manager = _.filter(Game.creeps, (creep) => creep.memory.role == 'manager');
 
 let spawnMaster = {
-    run: function () {
+    run: function (roomName) {
+        controllerLevel = Game.rooms[roomName].controller.level;
         for (var spawnName in Game.spawns) {
             GetDiggers(spawnName);
             MakeWorkCrew(spawnName);
@@ -26,19 +27,19 @@ function GetDiggers(spawnName) {
     for (var energySource in energySources) {
         let newName = 'Digger' + Game.time;
 
-        if (diggers.length < 1) {
+        if (diggers.length < 2) {
             spawn.spawnCreep(GetDiggerDuties(), newName, {
                 memory: {
                     role: 'digger1',
-                    assignedSource: energySource.id
+                    assignedSource: energySources[energySource].id
                 }
             });
         }
-        else if (diggers2.length < 1) {
+        else if (diggers2.length < 2) {
             spawn.spawnCreep(GetDiggerDuties(), newName, {
                 memory: {
                     role: 'digger2',
-                    assignedSource: energySource.id
+                    assignedSource: energySources[energySource].id
                 }
             });
         }
@@ -66,7 +67,7 @@ function GetDiggerDuties() {
 }
 
 function MakeWorkCrew(spawnName) {
-    if (diggers.length >= 1 && diggers2.length >= 1) {
+    if (diggers.length >= 2 && diggers2.length >= 2) {
         MakeScrumMasters(spawnName);
         MakeManagers(spawnName);
         MakeUpgraders(spawnName);
@@ -74,51 +75,6 @@ function MakeWorkCrew(spawnName) {
         MakeWorkers(spawnName);
         MakeRepairers(spawnName);
         MakeDefenders(spawnName);
-
-        if (upgraders.length < 1) {
-            let newName = 'Upgrader' + Game.time;
-            Game.spawns['Spawn1'].spawnCreep([WORK, WORK, WORK, WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY], newName, {
-                memory: {
-                    role: 'upgrader'
-                }
-            });
-        }
-
-        if (transporters.length < 2) {
-            let newName = 'transporter' + Game.time;
-            Game.spawns['Spawn1'].spawnCreep([MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, MOVE, MOVE, MOVE], newName, {
-                memory: {
-                    role: 'transporter'
-                }
-            });
-        }
-
-        if (workers.length < 1) {
-            var newName = 'Worker' + Game.time;
-            Game.spawns['Spawn1'].spawnCreep([WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY], newName, {
-                memory: {
-                    role: 'worker'
-                }
-            });
-        }
-
-        if (repairers.length < 1) {
-            var newName = 'minimum_wage_employee' + Game.time;
-            Game.spawns['Spawn1'].spawnCreep([WORK, WORK, WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY], newName, {
-                memory: {
-                    role: 'repair_squad'
-                }
-            });
-        }
-
-        if (defenders.length < 0) {
-            var newName = 'Defender' + Game.time;
-            Game.spawns['Spawn1'].spawnCreep([ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE], newName, {
-                memory: {
-                    role: 'attacker'
-                }
-            });
-        }
     }
 }
 
@@ -134,20 +90,12 @@ function MakeScrumMasters(spawnName) {
 }
 
 function GetScrumDuties() {
-    const SCRUMDUTIES1 = [CARRY, MOVE, MOVE];
-    const SCRUMDUTIES2 = [CARRY, CARRY, CARRY, MOVE, MOVE, MOVE];
-    const SCRUMDUTIES3 = [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE];
-    const SCRUMDUTIES4 = [MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE];
+    const DUTIES1 = [CARRY, MOVE, MOVE];
+    const DUTIES2 = [CARRY, CARRY, CARRY, MOVE, MOVE, MOVE];
+    const DUTIES3 = [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE];
+    const DUTIES4 = [MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE];
     
-    var scrumDuties = SCRUMDUTIES1;
-
-    if (controllerLevel == 2) {
-        scrumDuties = SCRUMDUTIES2;
-    } else if (controllerLevel == 3) {
-        scrumDuties = SCRUMDUTIES3;
-    } else if (controllerLevel == 4) {
-        scrumDuties = SCRUMDUTIES4;
-    }
+    var scrumDuties = GetDuties([DUTIES1, DUTIES2, DUTIES3, DUTIES4]);
 
     return scrumDuties;
 
@@ -161,22 +109,136 @@ function MakeManagers(spawnName) {
 }
 
 function GetManagerDuties() {
-    const MANAGERDUTIES1 = [CARRY, MOVE, MOVE];
-    const MANAGERDUTIES2 = [CARRY, CARRY, CARRY, MOVE, MOVE];
-    const MANAGERDUTIES3 = [CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE];
-    const MANAGERDUTIES4 = [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE];
+    const DUTIES1 = [CARRY, MOVE, MOVE];
+    const DUTIES2 = [CARRY, CARRY, CARRY, MOVE, MOVE];
+    const DUTIES3 = [CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE];
+    const DUTIES4 = [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE];
 
-    let managerDuties = MANAGERDUTIES1;
-
-    if (controllerLevel == 2) {
-        managerDuties = MANAGERDUTIES2;
-    }else if (controllerLevel == 3) {
-        managerDuties = MANAGERDUTIES3;
-    } else if (controllerLevel == 4) {
-        managerDuties = MANAGERDUTIES4;
-    }
+    let duties = GetDuties([DUTIES1, DUTIES2, DUTIES3, DUTIES4]);
     
-    return managerDuties;
+    return duties;
+}
+
+function MakeUpgraders(spawnName) {
+    if (upgraders.length < 5) {            
+        let newName = 'Upgrader' + Game.time;
+        Game.spawns[spawnName].spawnCreep(UpgraderDuties(), newName, {
+            memory: {
+                role: 'upgrader'
+            }
+        });
+    }
+}
+
+function UpgraderDuties() {
+    const DUTIES1 = [WORK, MOVE, CARRY];
+    const DUTIES2 = [WORK, WORK, MOVE, MOVE, CARRY, CARRY];
+    const DUTIES3 = [WORK, WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY];
+    const DUTIES4 = [WORK, WORK, WORK, WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY];
+
+    let duties = GetDuties([DUTIES1, DUTIES2, DUTIES3, DUTIES4]);
+
+    return duties;
+}
+
+function MakeTransporters(spawnName) {   
+    if (transporters.length < 2) {
+        let newName = 'transporter' + Game.time;
+        Game.spawns[spawnName].spawnCreep(TransporterDuties(), newName, {
+            memory: {
+                role: 'transporter'
+            }
+        });
+    }
+}
+
+function TransporterDuties() {
+    const DUTIES1 = [CARRY, MOVE, MOVE];
+    const DUTIES2 = [CARRY, CARRY, CARRY, MOVE, MOVE, MOVE];
+    const DUTIES3 = [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE];
+    const DUTIES4 = [MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE];
+    
+    let duties = GetDuties([DUTIES1, DUTIES2, DUTIES3, DUTIES4]);
+
+    return duties;
+}
+
+function MakeWorkers(spawnName) {
+    if (workers.length < 1) {
+        var newName = 'Worker' + Game.time;
+        Game.spawns[spawnName].spawnCreep(WorkerDuties(), newName, {
+            memory: {
+                role: 'worker'
+            }
+        });
+    }
+}
+
+function WorkerDuties() {
+    const DUTIES1 = [WORK, MOVE, CARRY];
+    const DUTIES2 = [WORK, WORK, MOVE, MOVE, CARRY, CARRY];
+    const DUTIES3 = [WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE,, CARRY, CARRY, CARRY, CARRY, ];
+    const DUTIES4 = [WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY];
+
+    let duties = GetDuties([DUTIES1, DUTIES2, DUTIES3, DUTIES4]);
+
+    return duties;
+}
+
+function MakeRepairers(spawnName) {
+    if (repairers.length < 1) {
+        var newName = 'minimum_wage_employee' + Game.time;
+        Game.spawns[spawnName].spawnCreep(RepairerDuties, newName, {
+            memory: {
+                role: 'repair_squad'
+            }
+        });
+    }
+}
+
+function RepairerDuties() {
+    const DUTIES1 = [WORK, MOVE, CARRY];
+    const DUTIES2 = [WORK, WORK, MOVE, MOVE, CARRY, CARRY];
+    const DUTIES3 = [WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE,, CARRY, CARRY, CARRY, CARRY ];
+    const DUTIES4 = [WORK, WORK, WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY];
+    
+    let duties = GetDuties([DUTIES1, DUTIES2, DUTIES3, DUTIES4]);
+
+    return duties;
+}
+
+function MakeDefenders(spawnName) {    
+    if (defenders.length < 0) {
+        var newName = 'Defender' + Game.time;
+        Game.spawns[spawnName].spawnCreep(DefenderDuties(), newName, {
+            memory: {
+                role: 'attacker'
+            }
+        });
+    }
+}
+
+function DefenderDuties() {
+    const DUTIES1 = [ATTACK, MOVE, MOVE];
+    const DUTIES2 = [ATTACK, ATTACK, MOVE, MOVE];
+    const DUTIES3 = [ATTACK, ATTACK, MOVE, MOVE, MOVE ];
+    const DUTIES4 = [ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE];
+    
+    let duties = GetDuties([DUTIES1, DUTIES2, DUTIES3, DUTIES4]);
+
+    return duties;
+}
+
+function GetDuties(duties) {
+    let duty = duties[0];
+    if (controllerLevel == 2) {
+        duty = duties[1];
+    }else if (controllerLevel == 3) {
+        managerDuties = duties[2];
+    } else if (controllerLevel == 4) {
+        managerDuties = duties[3];
+    }
+    return duty;
 }
 
 module.exports = spawnMaster;
