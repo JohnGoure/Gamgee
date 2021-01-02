@@ -8,7 +8,7 @@ let roleWorker = {
     if (!creep.memory.working && creep.carry.energy == creep.carryCapacity) {
       creep.memory.working = true;
     }
-    var targets = creep.room.find(FIND_CONSTRUCTION_SITES);
+    var target = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES);
 
     if (creep.memory.working == false) {
       const buildings = creep.room.find(FIND_STRUCTURES, {
@@ -30,10 +30,10 @@ let roleWorker = {
           creep.pickup(resource);
         }
       }
-    } else if (targets.length > 0) {
+    } else if (target != null) {
       creep.memory.working = true;
-      if (creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
-        creep.moveTo(targets[0]);
+      if (creep.build(target) == ERR_NOT_IN_RANGE) {
+        creep.moveTo(target);
       }
     } else {
       creep.memory.working = true;
