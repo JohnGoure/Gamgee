@@ -11,7 +11,7 @@ let controlFreak = {
     run: function () {
         for (var name in Game.creeps) {
             var creep = Game.creeps[name];
-            if (creep.memory.role == 'digger1' || creep.memory.role == 'digger2') {
+            if (creep.memory.role == "digger") {
                 roleDigger.run(creep);
             }
             if (creep.memory.role == 'worker') {
