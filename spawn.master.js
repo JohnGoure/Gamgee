@@ -1,18 +1,36 @@
-let controllerLevel = 1
+let DIGGERMAXCOUNT = 2;
+let SCRUMMASTERMAXAMOUNT = 4;
+let BUILDERCOUNT = 6;
+let MANAGERCOUNT = 1;
+let UPGRADERCOUNT = 4;
+let TRANSPORTERCOUNT = 1;
+let REPAIRERCOUNT = 1;
+let DEFENDERCOUNT = 1;
 
-let upgraders = _.filter(Game.creeps, (creep) => creep.memory.role == 'upgrader');
-let workers = _.filter(Game.creeps, (creep) => creep.memory.role == 'worker');
-let diggers = _.filter(Game.creeps, (creep) => creep.memory.role == 'digger1');
-let diggers2 = _.filter(Game.creeps, (creep) => creep.memory.role == 'digger2');
-let scrumMasters = _.filter(Game.creeps, (creep) => creep.memory.role == 'scrum_master');
-let defenders = _.filter(Game.creeps, (creep) => creep.memory.role == 'attacker');
-let repairers = _.filter(Game.creeps, (creep) => creep.memory.role == 'repair_squad');
-let transporters = _.filter(Game.creeps, (creep) => creep.memory.role == 'transporter');
-let manager = _.filter(Game.creeps, (creep) => creep.memory.role == 'manager');
+// Amount of Diggers before creating scrum masters.
+let STARTSCRUMAT = DIGGERMAXCOUNT / 2;
+// Amount of Scrum Master before creating workers.
+let STARTWORKERSAT = 2;
+
+let extensionCount = 0;
 
 let spawnMaster = {
-    run: function (roomName) {
-        controllerLevel = Game.rooms[roomName].controller.level;
+    run: function (roomName) {            
+        extensionsCount = Game.rooms[roomName].find(FIND_STRUCTURES, {
+            filter: (structure) => {
+                return structure.structureType == STRUCTURE_EXTENSION;
+            } 
+         });
+
+         if (extensionCount == 1) {
+             SCRUMMASTERMAXAMOUNT = 2;
+         }
+         if (extensionCount == 4) {
+             DIGGERMAXCOUNT = DIGGERMAXCOUNT / 2;
+             BUILDERCOUNT = BUILDERCOUNT / 2;
+             UPGRADERCOUNT = UPGRADERCOUNT / 2;
+         }
+
         for (var spawnName in Game.spawns) {
             GetDiggers(spawnName);
             MakeWorkCrew(spawnName);
@@ -22,223 +40,248 @@ let spawnMaster = {
 
 function GetDiggers(spawnName) {
     const spawn = Game.spawns[spawnName];
-    const energySources = spawn.room.find(FIND_SOURCES);
+    const energySources = spawn.room.find(FIND_SOURCES);        
 
     for (var energySource in energySources) {
-        let newName = 'Digger' + Game.time;
-
-        if (diggers.length < 2) {
+        const diggersAtSource = _.filter(Game.creeps, (creep) => creep.memory.assignedSource == energySources[energySource].id).length;
+        if (diggersAtSource < DIGGERMAXCOUNT) {    
+            let newName = 'Digger' + Game.time;
             spawn.spawnCreep(GetDiggerDuties(), newName, {
                 memory: {
-                    role: 'digger1',
-                    assignedSource: energySources[energySource].id
+                    role: 'digger',
+                    assignedSource: energySources[energySource].id,
+                    spawnName: spawnName
                 }
             });
         }
-        else if (diggers2.length < 2) {
-            spawn.spawnCreep(GetDiggerDuties(), newName, {
-                memory: {
-                    role: 'digger2',
-                    assignedSource: energySources[energySource].id
-                }
-            });
-        }
-    }
+    } 
 }
 
 function GetDiggerDuties() {
-    const DIGGERDUTIES1 = [WORK, CARRY, MOVE];
-    const DIGGERDUTIES2 = [WORK, WORK, WORK, CARRY, MOVE];
-    const DIGGERDUTIES3 = [WORK, WORK, WORK, WORK, WORK, CARRY, MOVE];
-    const DIGGERDUTIES4 = [WORK, WORK, WORK, WORK, WORK, WORK, WORK, MOVE, MOVE, MOVE, CARRY];
 
-    var diggerDuties = DIGGERDUTIES1;
-    
-    if (controllerLevel == 2) {
-        diggerDuties = DIGGERDUTIES2;
-    } else if (controllerLevel == 3) {
-        diggerDuties = DIGGERDUTIES3;
-    } else if (controllerLevel == 4) {
-        diggerDuties = DIGGERDUTIES4;
+    let duties = [];
+    let energyAmount = (extensionCount * 50) + 300;
+    while (energyAmount > 0) {
+        if (duties.length == 0) {
+            duties.push(CARRY);
+            duties.push(MOVE);
+            energyAmount = energyAmount - 100;
+        } else if (energyAmount >= 100) {
+            duties.push(WORK);
+            energyAmount = energyAmount - 100;
+        } else {
+            duties.push(MOVE);
+            energyAmount = energyAmount - 50;
+        }
     }
-
-    return diggerDuties;
+    
+    return duties;
 
 }
 
-function MakeWorkCrew(spawnName) {
-    if (diggers.length >= 2 && diggers2.length >= 2) {
+function MakeWorkCrew(spawnName) { 
+    let diggerCount = _.filter(Game.creeps, (creep) => creep.memory.role == 'digger' && creep.memory.spawnName == spawnName).length;
+    let scrumMasterCount = _.filter(Game.creeps, (creep) => creep.memory.role == 'scrum_master' && creep.memory.spawnName == spawnName).length;
+    // If there is 1 digger and no scrum master make a scrum master.
+    // else check if diggercount is greater than the STARTSCRUMAT.
+    if ((diggerCount > 1 && scrumMasterCount < 1) || (diggerCount >= STARTSCRUMAT)) {
         MakeScrumMasters(spawnName);
-        MakeManagers(spawnName);
-        MakeUpgraders(spawnName);
-        MakeTransporters(spawnName);
-        MakeWorkers(spawnName);
-        MakeRepairers(spawnName);
-        MakeDefenders(spawnName);
-    }
+        if (scrumMasterCount != null && scrumMasterCount >= STARTWORKERSAT) {
+            MakeManagers(spawnName);
+            MakeUpgraders(spawnName);
+            MakeTransporters(spawnName);
+            MakeWorkers(spawnName);
+            MakeRepairers(spawnName);
+            MakeDefenders(spawnName);        
+        }
+    }    
 }
 
 function MakeScrumMasters(spawnName) {
+    let scrumMasters = _.filter(Game.creeps, (creep) => creep.memory.role == 'scrum_master' && creep.memory.spawnName == spawnName);
     let newName = 'Scrum_Master' + Game.time;
-    if (scrumMasters.length < 2) {
-        Game.spawns[spawnName].spawnCreep(GetScrumDuties, newName, {
+    if (scrumMasters.length < SCRUMMASTERMAXAMOUNT) {
+        Game.spawns[spawnName].spawnCreep(GetScrumDuties(), newName, {
             memory: {
-                role: 'scrum_master'
+                role: 'scrum_master',
+                spawnName: spawnName
             }
         });
     }
 }
 
 function GetScrumDuties() {
-    const DUTIES1 = [CARRY, MOVE, MOVE];
-    const DUTIES2 = [CARRY, CARRY, CARRY, MOVE, MOVE, MOVE];
-    const DUTIES3 = [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE];
-    const DUTIES4 = [MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE];
-    
-    var scrumDuties = GetDuties([DUTIES1, DUTIES2, DUTIES3, DUTIES4]);
+    let duties = [];
+    for (let step = 0; step < extensionCount + 6; step++) {
+        if (duties.length == 0) {
+            duties.push(CARRY);
+        }
+        else if (duties.length % 2 == 0) {
+            duties.push(CARRY);
+        }
+        else {
+            duties.push(MOVE);
+        }
+    }
 
-    return scrumDuties;
+    return duties;
 
 }
 
 function MakeManagers(spawnName) {
-    if (manager.length < 1) {
+    let manager = _.filter(Game.creeps, (creep) => creep.memory.role == 'manager' && creep.memory.spawnName == spawnName);
+    if (manager.length < MANAGERCOUNT) {
         let newName = 'Manager' + Game.time;
-        Game.spawns[spawnName].spawnCreep(GetManagerDuties(), newName, {memory: {role: 'manager'}});
+        Game.spawns[spawnName].spawnCreep(GetManagerDuties(), newName, {memory: {role: 'manager',
+        spawnName: spawnName}});
     }
 }
 
 function GetManagerDuties() {
-    const DUTIES1 = [CARRY, MOVE, MOVE];
-    const DUTIES2 = [CARRY, CARRY, CARRY, MOVE, MOVE];
-    const DUTIES3 = [CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE];
-    const DUTIES4 = [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE];
 
-    let duties = GetDuties([DUTIES1, DUTIES2, DUTIES3, DUTIES4]);
+    let duties = [];
+
+    for (let step = 0; step < extensionCount + 6; step++) {
+        if (duties.length == 0) {
+            duties.push(MOVE);
+        } 
+        else if (duties.length % 2 == 0) {
+            duties.push(CARRY);
+        } else {
+            duties.push(MOVE);
+        }
+    }
     
     return duties;
 }
 
 function MakeUpgraders(spawnName) {
-    if (upgraders.length < 5) {            
+    let upgraders = _.filter(Game.creeps, (creep) => creep.memory.role == 'upgrader' && creep.memory.spawnName == spawnName);
+    if (upgraders.length < UPGRADERCOUNT) {            
         let newName = 'Upgrader' + Game.time;
         Game.spawns[spawnName].spawnCreep(UpgraderDuties(), newName, {
             memory: {
-                role: 'upgrader'
+                role: 'upgrader',
+                spawnName: spawnName
             }
         });
     }
 }
 
 function UpgraderDuties() {
-    const DUTIES1 = [WORK, MOVE, CARRY];
-    const DUTIES2 = [WORK, WORK, MOVE, MOVE, CARRY, CARRY];
-    const DUTIES3 = [WORK, WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY];
-    const DUTIES4 = [WORK, WORK, WORK, WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY];
 
-    let duties = GetDuties([DUTIES1, DUTIES2, DUTIES3, DUTIES4]);
-
-    return duties;
+    return GetDiggerDuties();
 }
 
-function MakeTransporters(spawnName) {   
-    if (transporters.length < 2) {
+function MakeTransporters(spawnName) {  
+    let transporters = _.filter(Game.creeps, (creep) => creep.memory.role == 'transporter' && creep.memory.spawnName == spawnName); 
+    if (transporters.length < TRANSPORTERCOUNT) {
         let newName = 'transporter' + Game.time;
         Game.spawns[spawnName].spawnCreep(TransporterDuties(), newName, {
             memory: {
-                role: 'transporter'
+                role: 'transporter',
+                spawnName: spawnName
             }
         });
     }
 }
 
 function TransporterDuties() {
-    const DUTIES1 = [CARRY, MOVE, MOVE];
-    const DUTIES2 = [CARRY, CARRY, CARRY, MOVE, MOVE, MOVE];
-    const DUTIES3 = [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE];
-    const DUTIES4 = [MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE];
-    
-    let duties = GetDuties([DUTIES1, DUTIES2, DUTIES3, DUTIES4]);
-
-    return duties;
+    return GetManagerDuties();
 }
 
 function MakeWorkers(spawnName) {
-    if (workers.length < 1) {
+    let workers = _.filter(Game.creeps, (creep) => creep.memory.role == 'worker' && creep.memory.spawnName == spawnName);
+    if (workers.length < BUILDERCOUNT) {
         var newName = 'Worker' + Game.time;
         Game.spawns[spawnName].spawnCreep(WorkerDuties(), newName, {
             memory: {
-                role: 'worker'
+                role: 'worker',
+                spawnName: spawnName
             }
         });
     }
 }
 
 function WorkerDuties() {
-    const DUTIES1 = [WORK, MOVE, CARRY];
-    const DUTIES2 = [WORK, WORK, MOVE, MOVE, CARRY, CARRY];
-    const DUTIES3 = [WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE,, CARRY, CARRY, CARRY, CARRY, ];
-    const DUTIES4 = [WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY];
-
-    let duties = GetDuties([DUTIES1, DUTIES2, DUTIES3, DUTIES4]);
-
+    let duties = [];
+    let energyAmount = (extensionCount * 50) + 300;
+    while (energyAmount > 0) {
+        if (duties.length == 0) {
+            duties.push(CARRY);
+            duties.push(MOVE);
+            energyAmount = energyAmount - 100;
+        } 
+        else if (energyAmount >= 100 && duties.length % 2 == 0) {
+            duties.push(WORK);
+            energyAmount = energyAmount - 100;
+        } 
+        else if (energyAmount >= 100) {
+            duties.push(MOVE);
+            duties.push(CARRY);
+            energyAmount = energyAmount - 100;
+        }
+        else {
+            duties.push(MOVE);
+            energyAmount = energyAmount - 50
+        }
+    }
     return duties;
 }
 
 function MakeRepairers(spawnName) {
-    if (repairers.length < 1) {
+    let repairers = _.filter(Game.creeps, (creep) => creep.memory.role == 'repair_squad' && creep.memory.spawnName == spawnName);
+    if (repairers.length < REPAIRERCOUNT) {
         var newName = 'minimum_wage_employee' + Game.time;
-        Game.spawns[spawnName].spawnCreep(RepairerDuties, newName, {
+        Game.spawns[spawnName].spawnCreep(RepairerDuties(), newName, {
             memory: {
-                role: 'repair_squad'
+                role: 'repair_squad',
+                spawnName: spawnName
             }
         });
     }
 }
 
 function RepairerDuties() {
-    const DUTIES1 = [WORK, MOVE, CARRY];
-    const DUTIES2 = [WORK, WORK, MOVE, MOVE, CARRY, CARRY];
-    const DUTIES3 = [WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE,, CARRY, CARRY, CARRY, CARRY ];
-    const DUTIES4 = [WORK, WORK, WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY];
-    
-    let duties = GetDuties([DUTIES1, DUTIES2, DUTIES3, DUTIES4]);
-
-    return duties;
+    return WorkerDuties();
 }
 
 function MakeDefenders(spawnName) {    
-    if (defenders.length < 0) {
+    let defenders = _.filter(Game.creeps, (creep) => creep.memory.role == 'attacker' && creep.memory.spawnName == spawnName);
+    if (defenders.length < DEFENDERCOUNT) {
         var newName = 'Defender' + Game.time;
         Game.spawns[spawnName].spawnCreep(DefenderDuties(), newName, {
             memory: {
-                role: 'attacker'
+                role: 'attacker',
+                spawnName: spawnName
             }
         });
     }
 }
 
 function DefenderDuties() {
-    const DUTIES1 = [ATTACK, MOVE, MOVE];
-    const DUTIES2 = [ATTACK, ATTACK, MOVE, MOVE];
-    const DUTIES3 = [ATTACK, ATTACK, MOVE, MOVE, MOVE ];
-    const DUTIES4 = [ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE];
-    
-    let duties = GetDuties([DUTIES1, DUTIES2, DUTIES3, DUTIES4]);
+    let duties = [];
+    let energyAmount = 300 + (extensionCount * 50);
+
+    while (energyAmount > 0) {
+        if (duties.length == 0) {
+            duties.push(MOVE);
+            duties.push(MOVE);
+            energyAmount = energyAmount - 100;
+        } 
+        else if (energyAmount >= 80) {
+            duties.push(ATTACK);
+            energyAmount = energyAmount - 80;
+        } 
+        else if (energyAmount >= 50) {
+            duties.push(MOVE);
+            energyAmount = energyAmount - 50;
+        } else {
+            break;
+        }
+    }
 
     return duties;
-}
-
-function GetDuties(duties) {
-    let duty = duties[0];
-    if (controllerLevel == 2) {
-        duty = duties[1];
-    }else if (controllerLevel == 3) {
-        managerDuties = duties[2];
-    } else if (controllerLevel == 4) {
-        managerDuties = duties[3];
-    }
-    return duty;
 }
 
 module.exports = spawnMaster;
