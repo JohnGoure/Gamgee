@@ -28,6 +28,16 @@ function restoreEnergy(creep) {
             creep.moveTo(buildings);
         }
     }
+    else {
+        // If the storage is full move the scrum masters back to the spawn
+        // so they are out of the way.
+        const getOutOfWay = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+            filter: (structure) => {
+                return ((structure.structureType == STRUCTURE_SPAWN));
+            }
+        });
+        creep.moveTo(getOutOfWay);
+    }
 }
 
 function findEnergy(creep) {
@@ -35,7 +45,7 @@ function findEnergy(creep) {
     let storedEnergyContainers = creep.room.find(FIND_STRUCTURES, {
         filter: (structure) => {
             return (structure.structureType == STRUCTURE_STORAGE &&
-                structure.store[RESOURCE_ENERGY] > 0 || structure.id == "5c9a24e5cac6ca1076c66c3f" &&
+                structure.store[RESOURCE_ENERGY] > 0 || structure.id == "" &&
                 structure.store[RESOURCE_ENERGY] > 0)
         }
     });
@@ -51,7 +61,8 @@ function findEnergy(creep) {
     const closestEnergyContainer = creep.pos.findClosestByPath(storedEnergyContainers);
     if (closestEnergyContainer) {
         getStoredEnergy(creep, closestEnergyContainer);
-    } else {
+    } 
+    else {
         if (droppedEnergy) {
             getDroppedEnergy(creep, droppedEnergy);
         }
