@@ -16,11 +16,11 @@ let extensionCount = 0;
 
 let spawnMaster = {
     run: function (roomName) {            
-        extensionsCount = Game.rooms[roomName].find(FIND_STRUCTURES, {
+        extensionCount = Game.rooms[roomName].find(FIND_STRUCTURES, {
             filter: (structure) => {
                 return structure.structureType == STRUCTURE_EXTENSION;
             } 
-         });
+         }).length;
 
          if (extensionCount == 1) {
              SCRUMMASTERMAXAMOUNT = 2;
@@ -74,7 +74,7 @@ function GetDiggerDuties() {
             energyAmount = energyAmount - 50;
         }
     }
-    
+    console.log(duties);
     return duties;
 
 }
