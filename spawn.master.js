@@ -1,6 +1,6 @@
-let DIGGERMAXCOUNT = 2;
+let DIGGERMAXCOUNT = 1;
 let SCRUMMASTERMAXAMOUNT = 4;
-let BUILDERCOUNT = 6;
+let BUILDERCOUNT = 4;
 let MANAGERCOUNT = 1;
 let UPGRADERCOUNT = 4;
 let TRANSPORTERCOUNT = 1;
@@ -8,7 +8,7 @@ let REPAIRERCOUNT = 1;
 let DEFENDERCOUNT = 1;
 
 // Amount of Diggers before creating scrum masters.
-let STARTSCRUMAT = DIGGERMAXCOUNT / 2;
+let STARTSCRUMAT = DIGGERMAXCOUNT;
 // Amount of Scrum Master before creating workers.
 let STARTWORKERSAT = 2;
 
@@ -25,10 +25,12 @@ let spawnMaster = {
          if (extensionCount == 1) {
              SCRUMMASTERMAXAMOUNT = 2;
          }
-         if (extensionCount == 4) {
+         if (extensionCount >= 4) {
              DIGGERMAXCOUNT = DIGGERMAXCOUNT / 2;
              BUILDERCOUNT = BUILDERCOUNT / 2;
              UPGRADERCOUNT = UPGRADERCOUNT / 2;
+             SCRUMMASTERMAXAMOUNT = SCRUMMASTERMAXAMOUNT / 2;
+             TRANSPORTERCOUNT = 2;
          }
 
         for (var spawnName in Game.spawns) {
@@ -74,7 +76,6 @@ function GetDiggerDuties() {
             energyAmount = energyAmount - 50;
         }
     }
-    console.log(duties);
     return duties;
 
 }
@@ -82,15 +83,18 @@ function GetDiggerDuties() {
 function MakeWorkCrew(spawnName) { 
     let diggerCount = _.filter(Game.creeps, (creep) => creep.memory.role == 'digger' && creep.memory.spawnName == spawnName).length;
     let scrumMasterCount = _.filter(Game.creeps, (creep) => creep.memory.role == 'scrum_master' && creep.memory.spawnName == spawnName).length;
+
     // If there is 1 digger and no scrum master make a scrum master.
     // else check if diggercount is greater than the STARTSCRUMAT.
-    if ((diggerCount > 1 && scrumMasterCount < 1) || (diggerCount >= STARTSCRUMAT)) {
+    if ((diggerCount > 1 && scrumMasterCount < 1) || (diggerCount >= DIGGERMAXCOUNT)) {
+
         MakeScrumMasters(spawnName);
-        if (scrumMasterCount != null && scrumMasterCount >= STARTWORKERSAT) {
+
+        if (scrumMasterCount != null && scrumMasterCount == SCRUMMASTERMAXAMOUNT) {
             MakeManagers(spawnName);
             MakeUpgraders(spawnName);
             MakeTransporters(spawnName);
-            MakeWorkers(spawnName);
+            MakeBuilders(spawnName);
             MakeRepairers(spawnName);
             MakeDefenders(spawnName);        
         }
@@ -190,11 +194,11 @@ function TransporterDuties() {
     return GetManagerDuties();
 }
 
-function MakeWorkers(spawnName) {
+function MakeBuilders(spawnName) {
     let workers = _.filter(Game.creeps, (creep) => creep.memory.role == 'worker' && creep.memory.spawnName == spawnName);
     if (workers.length < BUILDERCOUNT) {
         var newName = 'Worker' + Game.time;
-        Game.spawns[spawnName].spawnCreep(WorkerDuties(), newName, {
+        Game.spawns[spawnName].spawnCreep(BuilderDuties(), newName, {
             memory: {
                 role: 'worker',
                 spawnName: spawnName
@@ -203,7 +207,7 @@ function MakeWorkers(spawnName) {
     }
 }
 
-function WorkerDuties() {
+function BuilderDuties() {
     let duties = [];
     let energyAmount = (extensionCount * 50) + 300;
     while (energyAmount > 0) {
@@ -221,9 +225,12 @@ function WorkerDuties() {
             duties.push(CARRY);
             energyAmount = energyAmount - 100;
         }
-        else {
+        else if (energyAmount >= 50 && energyAmount < 100) {
             duties.push(MOVE);
             energyAmount = energyAmount - 50
+        }
+        else if (energyAmount < 50) {
+            break;
         }
     }
     return duties;
@@ -243,7 +250,7 @@ function MakeRepairers(spawnName) {
 }
 
 function RepairerDuties() {
-    return WorkerDuties();
+    return BuilderDuties();
 }
 
 function MakeDefenders(spawnName) {    
