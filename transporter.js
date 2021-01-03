@@ -29,16 +29,19 @@ let transporter = {
 }
 
 function findEnergy(creep) {
+
+
     const droppedEnergy = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES);
     const storedEnergyContainers = creep.room.find(FIND_STRUCTURES, {
         filter: (structure) => {
-            return (structure.id == "5cad5f10b5f63036db0a2f39" &&
-                structure.store[RESOURCE_ENERGY] > 350 || structure.id == "5cad5bd3b8c230403962c7c7" &&
-                structure.store[RESOURCE_ENERGY] > 350
+            return (structure.structureType == STRUCTURE_CONTAINER &&
+                structure.store[RESOURCE_ENERGY] > 300
             );
         }
     });
+    
     const closestEnergyContainer = creep.pos.findClosestByPath(storedEnergyContainers);
+
     if (closestEnergyContainer) {
         getStoredEnergy(creep, closestEnergyContainer);
     } else {
@@ -59,20 +62,17 @@ function getStoredEnergy(creep, target) {
     }
 }
 
-function transportEnergyToStorage(creep) {
-    const roomStorage = creep.room.storage;
-    const scrumMasterStorage = Game.getObjectById("5cad579b3b636f1583e1895e");
-    const upgradeStorage = Game.getObjectById("5cad5a17adfc20719aa12323");
-    if (scrumMasterStorage != null && scrumMasterStorage.store[RESOURCE_ENERGY] < CONTAINER_CAPACITY) {
-        if (creep.transfer(scrumMasterStorage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-            creep.moveTo(scrumMasterStorage);
-        }
-    } else if (upgradeStorage != null && upgradeStorage.store[RESOURCE_ENERGY] < CONTAINER_CAPACITY) {
-        if (creep.transfer(upgradeStorage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-            creep.moveTo(upgradeStorage);
-        }
-    } else if (creep.transfer(roomStorage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE || creep.transfer(roomStorage, RESOURCE_GHODIUM_OXIDE) == ERR_NOT_IN_RANGE) {
-        creep.moveTo(roomStorage);
+function transportEnergyToStorage(creep) {  
+    const allRedFlags = _.filter(Game.flags, (flag) => flag.color == COLOR_RED);
+
+    const containers = creep.room.find(FIND_STRUCTURES, {
+        filter: {structureType: STRUCTURE_CONTAINER}
+    });
+
+    const upgradeContainer = containers.filter((c) => c.pos.toString() == allRedFlags[0].pos.toString())[0];
+
+    if (creep.transfer(upgradeContainer, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+        creep.moveTo(upgradeContainer)
     }
 }
 
