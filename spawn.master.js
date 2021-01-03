@@ -7,11 +7,6 @@ let TRANSPORTERCOUNT = 1;
 let REPAIRERCOUNT = 1;
 let DEFENDERCOUNT = 1;
 
-// Amount of Diggers before creating scrum masters.
-let STARTSCRUMAT = DIGGERMAXCOUNT;
-// Amount of Scrum Master before creating workers.
-let STARTWORKERSAT = 2;
-
 let extensionCount = 0;
 
 let spawnMaster = {
@@ -30,7 +25,6 @@ let spawnMaster = {
              BUILDERCOUNT = BUILDERCOUNT / 2;
              UPGRADERCOUNT = UPGRADERCOUNT / 2;
              SCRUMMASTERMAXAMOUNT = SCRUMMASTERMAXAMOUNT / 2;
-             TRANSPORTERCOUNT = 2;
          }
 
         for (var spawnName in Game.spawns) {
