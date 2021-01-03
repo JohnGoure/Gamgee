@@ -36,6 +36,7 @@ function findEnergy(creep) {
         filter: (structure) => {
             return (structure.structureType == STRUCTURE_CONTAINER &&
                 structure.store[RESOURCE_ENERGY] > 300
+                && structure.id != creep.memory.upgradeContainerid
             );
         }
     });
@@ -63,14 +64,24 @@ function getStoredEnergy(creep, target) {
 }
 
 function transportEnergyToStorage(creep) {  
-    const allRedFlags = _.filter(Game.flags, (flag) => flag.color == COLOR_RED);
+    if (creep.memory.upgradeContainerid == null) {
+        const allRedFlags = _.filter(Game.flags, (flag) => flag.color == COLOR_RED);
 
-    const containers = creep.room.find(FIND_STRUCTURES, {
-        filter: {structureType: STRUCTURE_CONTAINER}
-    });
+        const containers = creep.room.find(FIND_STRUCTURES, {
+            filter: {structureType: STRUCTURE_CONTAINER}
+        });
+    
+        const upgradeContainer = containers.filter((c) => c.pos.toString() == allRedFlags[0].pos.toString())[0];
+        creep.memory.upgradeContainerid = upgradeContainer.id;
+        TransferEnergy(upgradeContainer);
+    }
+    else {
+        let upgradeContainer = Game.getObjectById(creep.memory.upgradeContainerid)
+        TransferEnergy(upgradeContainer, creep);
+    }
+}
 
-    const upgradeContainer = containers.filter((c) => c.pos.toString() == allRedFlags[0].pos.toString())[0];
-
+function TransferEnergy(upgradeContainer, creep) {    
     if (creep.transfer(upgradeContainer, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
         creep.moveTo(upgradeContainer)
     }
