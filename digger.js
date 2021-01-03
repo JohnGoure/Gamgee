@@ -1,5 +1,6 @@
 let digger = {
     run: function (creep) {
+    
         if (creep.carry.energy < creep.carryCapacity) {
             let source = Game.getObjectById(creep.memory.assignedSource);
             if (source == null) { 
@@ -9,7 +10,7 @@ let digger = {
                 
                     for (var energySource in energySources) {
                         const diggersAtSource = _.filter(Game.creeps, (creep) => creep.memory.assignedSource == energySources[energySource].id).length;
-                        if (diggersAtSource < DIGGERMAXCOUNT) { 
+                        if (diggersAtSource < 1) { 
                             creep.memory.assignedSource = energySources[energySource].id;
                         }
                     } 
