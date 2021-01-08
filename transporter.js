@@ -85,16 +85,16 @@ function transportEnergyToStorage(creep) {
     if (spawnContainer1 != null && spawnContainer1.store[RESOURCE_ENERGY] < spawnContainer1.store.getCapacity() * .7) {  
         TransferEnergy(spawnContainer1, creep);
     }
-    else if (spawnContainer2 != null && spawnContainer2.store[RESOURCE_ENERGY] < spawnContainer1.store.getCapacity() *.7) { 
+    else if (spawnContainer2 != null && spawnContainer2.store[RESOURCE_ENERGY] < spawnContainer2.store.getCapacity() *.7) { 
         TransferEnergy(spawnContainer2, creep);
     }
-    else if (upgradeContainer != null && upgradeContainer != 'undefined' && upgradeContainer.store[RESOURCE_ENERGY] < spawnContainer1.store.getCapacity()) { 
+    else if (upgradeContainer != null && upgradeContainer.store[RESOURCE_ENERGY] < upgradeContainer.store.getCapacity()) { 
         TransferEnergy(upgradeContainer, creep);
     }
     else if (spawnContainer1 != null && spawnContainer1.store[RESOURCE_ENERGY] < spawnContainer1.store.getCapacity()) {     
         TransferEnergy(spawnContainer1, creep);
     }
-    else if (spawnContainer2 != null && spawnContainer2.store[RESOURCE_ENERGY] < spawnContainer1.store.getCapacity()) {         
+    else if (spawnContainer2 != null && spawnContainer2.store[RESOURCE_ENERGY] < spawnContainer2.store.getCapacity()) {         
         TransferEnergy(spawnContainer2, creep);
     }
 }
