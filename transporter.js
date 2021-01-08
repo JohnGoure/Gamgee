@@ -37,6 +37,8 @@ function findEnergy(creep) {
             return (structure.structureType == STRUCTURE_CONTAINER &&
                 structure.store[RESOURCE_ENERGY] > 300
                 && structure.id != creep.memory.upgradeContainerid
+                && structure.id != creep.memory.spawnContainer1Id
+                && structure.id != creep.memory.spawnContainer2Id
             );
         }
     });
@@ -64,24 +66,34 @@ function getStoredEnergy(creep, target) {
 }
 
 function transportEnergyToStorage(creep) {  
-    if (creep.memory.upgradeContainerid == null) {
-        const allRedFlags = _.filter(Game.flags, (flag) => flag.color == COLOR_RED);
-
-        const containers = creep.room.find(FIND_STRUCTURES, {
-            filter: {structureType: STRUCTURE_CONTAINER}
-        });
-    
-        const upgradeContainer = containers.filter((c) => c.pos.toString() == allRedFlags[0].pos.toString())[0];
-        creep.memory.upgradeContainerid = upgradeContainer.id;
-        TransferEnergy(upgradeContainer);
+    if (creep.memory.upgradeContainerId == null) {        
+        const containerId = Game.spawns[creep.memory.spawnName].memory.upgradeContainerId;
+        creep.memory.upgradeContainerId = containerId;
     }
-    else {
-        let upgradeContainer = Game.getObjectById(creep.memory.upgradeContainerid)
+    if (creep.memory.spawnContainer1Id == null) {
+        const containerId = Game.spawns[creep.memory.spawnName].memory.spawnContainer1Id != null ? Game.spawns[creep.memory.spawnName].memory.spawnContainer1Id.id : null;
+        creep.memory.spawnContainer1Id = containerId;
+    }
+    if (creep.memory.spawnContainer2Id == null) {
+        const containerId = Game.spawns[creep.memory.spawnName].memory.spawnContainer2Id ? Game.spawns[creep.memory.spawnName].memory.spawnContainer2Id.id : null;
+        creep.memory.spawnContainer2Id = containerId;
+    }
+    const upgradeContainer = Game.getObjectById(creep.memory.upgradeContainerId);
+    const spawnContainer1 = Game.getObjectById(creep.memory.spawnContainer1Id);
+    const spawnContainer2 = Game.getObjectById(creep.memory.spawnContainer2Id);
+
+    if (spawnContainer1 != null && spawnContainer1.store[RESOURCE_ENERGY] < spawnContainer1.store.getCapacity()) {       
+        TransferEnergy(spawnContainer1, creep);
+    }
+    else if (spawnContainer2 != null && spawnContainer2.store[RESOURCE_ENERGY] < spawnContainer1.store.getCapacity()) {        
+        TransferEnergy(spawnContainer2, creep);
+    }
+    else if (upgradeContainer != null && upgradeContainer != 'undefined' && upgradeContainer.store[RESOURCE_ENERGY] < spawnContainer1.store.getCapacity()) {        
         TransferEnergy(upgradeContainer, creep);
     }
 }
 
-function TransferEnergy(upgradeContainer, creep) {    
+function TransferEnergy(upgradeContainer, creep) { 
     if (creep.transfer(upgradeContainer, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
         creep.moveTo(upgradeContainer)
     }
