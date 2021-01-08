@@ -36,7 +36,7 @@ function findEnergy(creep) {
         filter: (structure) => {
             return (structure.structureType == STRUCTURE_CONTAINER &&
                 structure.store[RESOURCE_ENERGY] > 300
-                && structure.id != creep.memory.upgradeContainerid
+                && structure.id != creep.memory.upgradeContainerId
                 && structure.id != creep.memory.spawnContainer1Id
                 && structure.id != creep.memory.spawnContainer2Id
             );
@@ -82,14 +82,20 @@ function transportEnergyToStorage(creep) {
     const spawnContainer1 = Game.getObjectById(creep.memory.spawnContainer1Id);
     const spawnContainer2 = Game.getObjectById(creep.memory.spawnContainer2Id);
 
-    if (spawnContainer1 != null && spawnContainer1.store[RESOURCE_ENERGY] < spawnContainer1.store.getCapacity()) {       
+    if (spawnContainer1 != null && spawnContainer1.store[RESOURCE_ENERGY] < spawnContainer1.store.getCapacity() * .7) {  
         TransferEnergy(spawnContainer1, creep);
     }
-    else if (spawnContainer2 != null && spawnContainer2.store[RESOURCE_ENERGY] < spawnContainer1.store.getCapacity()) {        
+    else if (spawnContainer2 != null && spawnContainer2.store[RESOURCE_ENERGY] < spawnContainer1.store.getCapacity() *.7) { 
         TransferEnergy(spawnContainer2, creep);
     }
-    else if (upgradeContainer != null && upgradeContainer != 'undefined' && upgradeContainer.store[RESOURCE_ENERGY] < spawnContainer1.store.getCapacity()) {        
+    else if (upgradeContainer != null && upgradeContainer != 'undefined' && upgradeContainer.store[RESOURCE_ENERGY] < spawnContainer1.store.getCapacity()) { 
         TransferEnergy(upgradeContainer, creep);
+    }
+    else if (spawnContainer1 != null && spawnContainer1.store[RESOURCE_ENERGY] < spawnContainer1.store.getCapacity()) {     
+        TransferEnergy(spawnContainer1, creep);
+    }
+    else if (spawnContainer2 != null && spawnContainer2.store[RESOURCE_ENERGY] < spawnContainer1.store.getCapacity()) {         
+        TransferEnergy(spawnContainer2, creep);
     }
 }
 
