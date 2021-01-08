@@ -41,19 +41,18 @@ function restoreEnergy(creep) {
 }
 
 function findEnergy(creep) {
-    const droppedEnergy = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES);
     let storedEnergyContainers = creep.room.find(FIND_STRUCTURES, {
         filter: (structure) => {
             return (structure.structureType == STRUCTURE_STORAGE &&
-                structure.store[RESOURCE_ENERGY] > 0 || structure.id == "" &&
-                structure.store[RESOURCE_ENERGY] > 0)
+                structure.store[RESOURCE_ENERGY] > 200 || structure.id == "" &&
+                structure.store[RESOURCE_ENERGY] > 200)
         }
     });
     if (storedEnergyContainers.length < 1) {
         storedEnergyContainers = creep.room.find(FIND_STRUCTURES, {
         filter: (structure) => {
             return (structure.structureType == STRUCTURE_CONTAINER  &&
-                structure.store[RESOURCE_ENERGY] > 0)
+                structure.store[RESOURCE_ENERGY] > 200)
         }
     });
     }
@@ -62,7 +61,8 @@ function findEnergy(creep) {
     if (closestEnergyContainer) {
         getStoredEnergy(creep, closestEnergyContainer);
     } 
-    else {
+    else {        
+        const droppedEnergy = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES);
         if (droppedEnergy) {
             getDroppedEnergy(creep, droppedEnergy);
         }
