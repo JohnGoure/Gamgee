@@ -1,9 +1,9 @@
 let DIGGERMAXCOUNT = 1;
 let SCRUMMASTERMAXAMOUNT = 4;
 let BUILDERCOUNT = 4;
-let MANAGERCOUNT = 1;
+let MANAGERCOUNT = 0;
 let UPGRADERCOUNT = 4;
-let TRANSPORTERCOUNT = 1;
+let TRANSPORTERCOUNT = 2;
 let REPAIRERCOUNT = 1;
 let DEFENDERCOUNT = 1;
 
@@ -28,11 +28,42 @@ let spawnMaster = {
          }
 
         for (var spawnName in Game.spawns) {
+            SetupSpawnMemory(spawnName);
             GetDiggers(spawnName);
             MakeWorkCrew(spawnName);
         }
     }
 };
+
+function SetupSpawnMemory(spawnName, creep) {    
+    const spawn = Game.spawns[spawnName];
+    if (spawn.memory.upgradeContainerId == null) {    
+        const allRedFlags = _.filter(Game.flags, (flag) => flag.color == COLOR_RED);
+
+        const containers = spawn.room.find(FIND_STRUCTURES, {
+            filter: {structureType: STRUCTURE_CONTAINER}
+        });
+    
+        const upgradeContainer = containers.filter((c) => c.pos.toString() == allRedFlags[0].pos.toString())[0];
+        spawn.memory.upgradeContainerId = upgradeContainer.id;
+    }
+    if (spawn.memory.spawnContainer1Id == null || spawn.memory.spawnContainer2Id == null) {
+        
+        const allWhiteFlags = _.filter(Game.flags, (flag) => flag.color == COLOR_WHITE);
+
+        const containers = spawn.room.find(FIND_STRUCTURES, {
+            filter: {structureType: STRUCTURE_CONTAINER}
+        });
+    
+        const spawnContainer = containers.filter((c) => allWhiteFlags.filter(f => f.pos.toString() == c.pos.toString()).length);
+        if (spawnContainer != null) {
+            if (spawnContainer[0] != null)
+                spawn.memory.spawnContainer1Id = spawnContainer[0].id;
+            if (spawnContainer[1] != null)
+                spawn.memory.spawnContainer2Id = spawnContainer[1].id;
+        }    
+    }
+}
 
 function GetDiggers(spawnName) {
     const spawn = Game.spawns[spawnName];
@@ -84,7 +115,7 @@ function MakeWorkCrew(spawnName) {
 
         MakeScrumMasters(spawnName);
 
-        if (scrumMasterCount != null && scrumMasterCount == SCRUMMASTERMAXAMOUNT) {
+        if (scrumMasterCount != null && scrumMasterCount >= SCRUMMASTERMAXAMOUNT) {
             MakeManagers(spawnName);
             MakeUpgraders(spawnName);
             MakeTransporters(spawnName);
@@ -172,13 +203,18 @@ function UpgraderDuties() {
 }
 
 function MakeTransporters(spawnName) {  
+    const spawn = Game.spawns[spawnName];
     let transporters = _.filter(Game.creeps, (creep) => creep.memory.role == 'transporter' && creep.memory.spawnName == spawnName); 
+
     if (transporters.length < TRANSPORTERCOUNT) {
         let newName = 'transporter' + Game.time;
         Game.spawns[spawnName].spawnCreep(TransporterDuties(), newName, {
             memory: {
                 role: 'transporter',
-                spawnName: spawnName
+                spawnName: spawnName,
+                upgradeContainerId: spawn.memory.upgradeContainerId != null ? spawn.memory.upgradeContainerId : null,
+                spawnContainer1Id: spawn.memory.spawnContainer1Id != null ? spawn.memory.spawnContainer1Id.id : null,
+                spawnContainer2Id: spawn.memory.spawnContainer2Id != null ? spawn.memory.spawnContainer2Id.id : null
             }
         });
     }
