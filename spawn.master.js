@@ -1,11 +1,11 @@
-let DIGGERMAXCOUNT = 1;
-let SCRUMMASTERMAXAMOUNT = 4;
-let BUILDERCOUNT = 4;
+let DIGGERMAXCOUNT = 3;
+let SCRUMMASTERMAXAMOUNT = 3;
+let BUILDERCOUNT = 6;
 let MANAGERCOUNT = 0;
 let UPGRADERCOUNT = 4;
-let TRANSPORTERCOUNT = 2;
+let TRANSPORTERCOUNT = 3;
 let REPAIRERCOUNT = 1;
-let DEFENDERCOUNT = 1;
+let DEFENDERCOUNT = 0;
 
 let extensionCount = 0;
 
@@ -27,6 +27,16 @@ let spawnMaster = {
              SCRUMMASTERMAXAMOUNT = SCRUMMASTERMAXAMOUNT / 2;
          }
 
+         var towers = Game.rooms[roomName].find(FIND_MY_STRUCTURES, {
+            filter: {
+                structureType: STRUCTURE_TOWER
+            }
+        });
+
+        if (towers != null && towers.length > 0) {
+            MANAGERCOUNT = 1;
+        }
+
         for (var spawnName in Game.spawns) {
             SetupSpawnMemory(spawnName);
             GetDiggers(spawnName);
@@ -37,6 +47,11 @@ let spawnMaster = {
 
 function SetupSpawnMemory(spawnName, creep) {    
     const spawn = Game.spawns[spawnName];
+
+    if (spawn.memory.sources == null) {
+        spawn.memory.sources = spawn.room.find(FIND_SOURCES);
+    }
+
     if (spawn.memory.upgradeContainerId == null) {    
         const allRedFlags = _.filter(Game.flags, (flag) => flag.color == COLOR_RED);
 
@@ -45,7 +60,7 @@ function SetupSpawnMemory(spawnName, creep) {
         });
     
         const upgradeContainer = containers.filter((c) => c.pos.toString() == allRedFlags[0].pos.toString())[0];
-        spawn.memory.upgradeContainerId = upgradeContainer.id;
+        spawn.memory.upgradeContainerId = upgradeContainer != null ? upgradeContainer.id : null;
     }
     if (spawn.memory.spawnContainer1Id == null || spawn.memory.spawnContainer2Id == null) {
         
@@ -67,33 +82,36 @@ function SetupSpawnMemory(spawnName, creep) {
 
 function GetDiggers(spawnName) {
     const spawn = Game.spawns[spawnName];
-    const energySources = spawn.room.find(FIND_SOURCES);        
+    const energySources = spawn.memory.sources;   
+    
+    energySources.forEach( energySource => 
+        {
 
-    for (var energySource in energySources) {
-        const diggersAtSource = _.filter(Game.creeps, (creep) => creep.memory.assignedSource == energySources[energySource].id).length;
-        if (diggersAtSource < DIGGERMAXCOUNT) {    
-            let newName = 'Digger' + Game.time;
-            spawn.spawnCreep(GetDiggerDuties(), newName, {
-                memory: {
-                    role: 'digger',
-                    assignedSource: energySources[energySource].id,
-                    spawnName: spawnName
-                }
-            });
+            const diggersAtSource = _.filter(Game.creeps, (creep) => creep.memory.assignedSource == energySource.id).length;
+            if (diggersAtSource < DIGGERMAXCOUNT) {   
+                let newName = 'Digger' + Game.time;
+                spawn.spawnCreep(GetDiggerDuties(), newName, {
+                    memory: {
+                        role: 'digger',
+                        assignedSource: energySource.id,
+                        spawnName: spawnName
+                    }
+                });
+            }
         }
-    } 
+    );
 }
 
 function GetDiggerDuties() {
 
     let duties = [];
     let energyAmount = (extensionCount * 50) + 300;
-    while (energyAmount > 0) {
+    while (energyAmount > 0 && duties.length < 8) {
         if (duties.length == 0) {
             duties.push(CARRY);
             duties.push(MOVE);
             energyAmount = energyAmount - 100;
-        } else if (energyAmount >= 100) {
+        } else if (energyAmount >= 100 && (duties.length + 1) % 3 == 0) {
             duties.push(WORK);
             energyAmount = energyAmount - 100;
         } else {
@@ -111,7 +129,7 @@ function MakeWorkCrew(spawnName) {
 
     // If there is 1 digger and no scrum master make a scrum master.
     // else check if diggercount is greater than the STARTSCRUMAT.
-    if ((diggerCount > 1 && scrumMasterCount < 1) || (diggerCount >= DIGGERMAXCOUNT)) {
+    if ((diggerCount > 1 && scrumMasterCount < 1) || (diggerCount >= DIGGERMAXCOUNT * 2)) {
 
         MakeScrumMasters(spawnName);
 
@@ -186,7 +204,7 @@ function GetManagerDuties() {
 
 function MakeUpgraders(spawnName) {
     let upgraders = _.filter(Game.creeps, (creep) => creep.memory.role == 'upgrader' && creep.memory.spawnName == spawnName);
-    if (upgraders.length < UPGRADERCOUNT) {            
+    if (upgraders.length < UPGRADERCOUNT) {     
         let newName = 'Upgrader' + Game.time;
         Game.spawns[spawnName].spawnCreep(UpgraderDuties(), newName, {
             memory: {
