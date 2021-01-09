@@ -59,9 +59,9 @@ function findEnergy(creep) {
         filter: (structure) => {
             return (structure.structureType == STRUCTURE_CONTAINER &&
                 structure.store[RESOURCE_ENERGY] > FINDCONTAINERENERGYAT
-                && structure.id != creep.memory.upgradeContainerId
-                && structure.id != creep.memory.spawnContainer1Id
-                && structure.id != creep.memory.spawnContainer2Id
+                && structure.id != Game.spawns[creep.memory.spawnName].memory.upgradeContainerId
+                && structure.id != Game.spawns[creep.memory.spawnName].memory.spawnContainer1Id
+                && structure.id != Game.spawns[creep.memory.spawnName].memory.spawnContainer2Id
             );
         }
     });
