@@ -1,3 +1,6 @@
+const FINDCONTAINERENERGYAT = 200;
+const FINDDROPPEDENERGYAT = 300;
+
 let scrumMaster = {
     run: function (creep) {
         if (creep.memory.building && creep.carry.energy == 0) {
@@ -44,30 +47,37 @@ function findEnergy(creep) {
     let storedEnergyContainers = creep.room.find(FIND_STRUCTURES, {
         filter: (structure) => {
             return (structure.structureType == STRUCTURE_STORAGE &&
-                structure.store[RESOURCE_ENERGY] > 200 || structure.id == "" &&
-                structure.store[RESOURCE_ENERGY] > 200)
+                structure.store[RESOURCE_ENERGY] >= FINDCONTAINERENERGYAT || structure.structureType == STRUCTURE_CONTAINER &&
+                structure.store[RESOURCE_ENERGY] >= FINDCONTAINERENERGYAT)
         }
     });
-    if (storedEnergyContainers.length < 1) {
+
+    // If the creep is not a scrum master or upgrader they can't use the
+    // upgrader or spawn containers.
+    if (creep.memory.role == 'transporter' || creep.memory.role == 'worker')
         storedEnergyContainers = creep.room.find(FIND_STRUCTURES, {
         filter: (structure) => {
-            return (structure.structureType == STRUCTURE_CONTAINER  &&
-                structure.store[RESOURCE_ENERGY] > 200)
+            return (structure.structureType == STRUCTURE_CONTAINER &&
+                structure.store[RESOURCE_ENERGY] > FINDCONTAINERENERGYAT
+                && structure.id != creep.memory.upgradeContainerId
+                && structure.id != creep.memory.spawnContainer1Id
+                && structure.id != creep.memory.spawnContainer2Id
+            );
         }
     });
-    }
     
-    const closestEnergyContainer = creep.pos.findClosestByPath(storedEnergyContainers);
-    if (closestEnergyContainer) {
+    const closestEnergyContainer = creep.pos.findClosestByPath(storedEnergyContainers);        
+    
+    const droppedResources = creep.room.find(FIND_DROPPED_RESOURCES);
+    const lotsofenergy = droppedResources.filter(resource => resource.energy >= FINDDROPPEDENERGYAT);
+    const closestDroppedEnergy = creep.pos.findClosestByPath(lotsofenergy);
+
+    if (closestDroppedEnergy != null)
+        getDroppedEnergy(creep, closestDroppedEnergy);
+
+    else if (closestEnergyContainer != null) {
         getStoredEnergy(creep, closestEnergyContainer);
     } 
-    else {        
-        const droppedEnergy = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES);
-        if (droppedEnergy) {
-            getDroppedEnergy(creep, droppedEnergy);
-        }
-    }
-
 }
 
 function getDroppedEnergy(creep, target) {
@@ -81,4 +91,7 @@ function getStoredEnergy(creep, target) {
     }
 }
 
-module.exports = scrumMaster;
+module.exports = {
+    scrumMaster: scrumMaster, 
+    findEnergy: findEnergy
+};
