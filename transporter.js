@@ -6,7 +6,7 @@ let transporter = {
 
         // If there isn't a scrum master the transporter becomes the scrum master.
         if (scrumMasters.length == 0) {
-            ScrumMaster.run(creep);
+            ScrumMaster.scrumMaster.run(creep);
         } 
         else {
             if (creep.memory.transporting && creep.carry.energy == 0) {
@@ -29,29 +29,7 @@ let transporter = {
 }
 
 function findEnergy(creep) {
-
-
-    const droppedEnergy = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES);
-    const storedEnergyContainers = creep.room.find(FIND_STRUCTURES, {
-        filter: (structure) => {
-            return (structure.structureType == STRUCTURE_CONTAINER &&
-                structure.store[RESOURCE_ENERGY] > 300
-                && structure.id != creep.memory.upgradeContainerId
-                && structure.id != creep.memory.spawnContainer1Id
-                && structure.id != creep.memory.spawnContainer2Id
-            );
-        }
-    });
-    
-    const closestEnergyContainer = creep.pos.findClosestByPath(storedEnergyContainers);
-
-    if (closestEnergyContainer) {
-        getStoredEnergy(creep, closestEnergyContainer);
-    } else {
-        if (droppedEnergy) {
-            getDroppedEnergy(creep, droppedEnergy);
-        }
-    }
+    ScrumMaster.findEnergy(creep);
 }
 
 function getDroppedEnergy(creep, target) {
@@ -82,21 +60,27 @@ function transportEnergyToStorage(creep) {
     const spawnContainer1 = Game.getObjectById(creep.memory.spawnContainer1Id);
     const spawnContainer2 = Game.getObjectById(creep.memory.spawnContainer2Id);
 
-    if (spawnContainer1 != null && spawnContainer1.store[RESOURCE_ENERGY] < spawnContainer1.store.getCapacity() * .7) {  
-        TransferEnergy(spawnContainer1, creep);
-    }
-    else if (spawnContainer2 != null && spawnContainer2.store[RESOURCE_ENERGY] < spawnContainer1.store.getCapacity() *.7) { 
-        TransferEnergy(spawnContainer2, creep);
-    }
-    else if (upgradeContainer != null && upgradeContainer != 'undefined' && upgradeContainer.store[RESOURCE_ENERGY] < spawnContainer1.store.getCapacity()) { 
-        TransferEnergy(upgradeContainer, creep);
-    }
-    else if (spawnContainer1 != null && spawnContainer1.store[RESOURCE_ENERGY] < spawnContainer1.store.getCapacity()) {     
-        TransferEnergy(spawnContainer1, creep);
-    }
-    else if (spawnContainer2 != null && spawnContainer2.store[RESOURCE_ENERGY] < spawnContainer1.store.getCapacity()) {         
-        TransferEnergy(spawnContainer2, creep);
-    }
+    const containers = [upgradeContainer, spawnContainer1, spawnContainer2]
+
+    containers.filter(container => 
+        container != null && container.store[RESOURCE_ENERGY] < container.store.getCapacity());
+
+    TransferEnergy(containers[0], creep);
+    // if (spawnContainer1 != null && spawnContainer1.store[RESOURCE_ENERGY] < spawnContainer1.store.getCapacity() * .7) {  
+    //     TransferEnergy(spawnContainer1, creep);
+    // }
+    // else if (spawnContainer2 != null && spawnContainer2.store[RESOURCE_ENERGY] < spawnContainer1.store.getCapacity() *.7) { 
+    //     TransferEnergy(spawnContainer2, creep);
+    // }
+    // else if (upgradeContainer != null && upgradeContainer != 'undefined' && upgradeContainer.store[RESOURCE_ENERGY] < upgradeContainer.store.getCapacity()) { 
+    //     TransferEnergy(upgradeContainer, creep);
+    // }
+    // else if (spawnContainer1 != null && spawnContainer1.store[RESOURCE_ENERGY] < spawnContainer1.store.getCapacity()) {     
+    //     TransferEnergy(spawnContainer1, creep);
+    // }
+    // else if (spawnContainer2 != null && spawnContainer2.store[RESOURCE_ENERGY] < spawnContainer2.store.getCapacity()) {         
+    //     TransferEnergy(spawnContainer2, creep);
+    // }
 }
 
 function TransferEnergy(upgradeContainer, creep) { 
