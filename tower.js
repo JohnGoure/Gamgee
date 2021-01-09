@@ -47,12 +47,12 @@ let towerDefense = {
 
                     var repairitnow = towers[i].pos.findClosestByRange(FIND_STRUCTURES, {
                         filter: (s) => {
-                            return (s.hits < s.hitsMax / 2000 && s.hits > 0);
+                            return (s.hits < s.hitsMax / 2000 && s.hits < 1000);
                         }
                     });
                     //Find the closest damaged Structure
                     var closestDamagedStructure = towers[i].pos.findClosestByRange(FIND_STRUCTURES, {
-                        filter: (s) => s.hits < s.hitsMax / 1000 && s.structureType != STRUCTURE_WALL
+                        filter: (s) => s.hits < s.hitsMax / 1000 && s.hits < 1000 && s.hits > 0 && s.structureType != STRUCTURE_WALL
                     });
                     if (repairitnow) {
                         towers[i].repair(repairitnow);
