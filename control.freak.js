@@ -21,7 +21,7 @@ let controlFreak = {
                 roleUpgrader.run(creep);
             }
             if (creep.memory.role == 'scrum_master') {
-                roleScrumMaster.run(creep);
+                roleScrumMaster.scrumMaster.run(creep);
             }
             if (creep.memory.role == 'transporter') {
                 roleTransporter.run(creep);
