@@ -81,6 +81,7 @@ function transportEnergyToStorage(creep) {
     // else if (spawnContainer2 != null && spawnContainer2.store[RESOURCE_ENERGY] < spawnContainer2.store.getCapacity()) {         
     //     TransferEnergy(spawnContainer2, creep);
     // }
+
 }
 
 function TransferEnergy(upgradeContainer, creep) { 
