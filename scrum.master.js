@@ -1,5 +1,5 @@
 const FINDCONTAINERENERGYAT = 200;
-const FINDDROPPEDENERGYAT = 300;
+const FINDDROPPEDENERGYAT = 100;
 
 let scrumMaster = {
     run: function (creep) {
@@ -54,7 +54,7 @@ function findEnergy(creep) {
 
     // If the creep is not a scrum master or upgrader they can't use the
     // upgrader or spawn containers.
-    if (creep.memory.role == 'transporter' || creep.memory.role == 'worker')
+    if (creep.memory.role == 'transporter')
         storedEnergyContainers = creep.room.find(FIND_STRUCTURES, {
         filter: (structure) => {
             return (structure.structureType == STRUCTURE_CONTAINER &&
@@ -65,6 +65,15 @@ function findEnergy(creep) {
             );
         }
     });
+
+    if (creep.memory.role == 'repair_squad') {
+        storedEnergyContainers = creep.room.find(FIND_STRUCTURES, {
+            filter: (structure) => {
+                return ((structure.structureType == STRUCTURE_STORAGE && structure.store[RESOURCE_ENERGY] >= 100) ||
+                (structure.structureType == STRUCTURE_CONTAINER && structure.store[RESOURCE_ENERGY] >= 100));
+            }
+        })
+    }
     
     const closestEnergyContainer = creep.pos.findClosestByPath(storedEnergyContainers);        
     
