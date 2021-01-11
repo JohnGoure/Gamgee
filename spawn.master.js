@@ -1,10 +1,10 @@
 let DIGGERMAXCOUNT = 3;
 let SCRUMMASTERMAXAMOUNT = 2;
-let BUILDERCOUNT = 6;
+let BUILDERCOUNT = 3;
 let MANAGERCOUNT = 0;
 let UPGRADERCOUNT = 4;
-let TRANSPORTERCOUNT = 3;
-let REPAIRERCOUNT = 1;
+let TRANSPORTERCOUNT = 0;
+let REPAIRERCOUNT = 0;
 let DEFENDERCOUNT = 0;
 
 let extensionCount = 0;
@@ -17,16 +17,15 @@ let spawnMaster = {
             } 
          }).length;
 
-         if (extensionCount == 1) {
+         if (extensionCount >= 1 && extensionCount < 4) {
              SCRUMMASTERMAXAMOUNT = 2;
          }
          if (extensionCount >= 4) {
-             DIGGERMAXCOUNT = DIGGERMAXCOUNT / 2;
-             BUILDERCOUNT = BUILDERCOUNT / 2;
-             UPGRADERCOUNT = UPGRADERCOUNT / 2;
-             SCRUMMASTERMAXAMOUNT = SCRUMMASTERMAXAMOUNT / 2;
+             DIGGERMAXCOUNT = 1;
+             BUILDERCOUNT = 2;
+             UPGRADERCOUNT = 2;
+             SCRUMMASTERMAXAMOUNT = 1;
          }
-
          var towers = Game.rooms[roomName].find(FIND_MY_STRUCTURES, {
             filter: {
                 structureType: STRUCTURE_TOWER
@@ -111,7 +110,7 @@ function GetDiggerDuties() {
             duties.push(CARRY);
             duties.push(MOVE);
             energyAmount = energyAmount - 100;
-        } else if (energyAmount >= 100 && (duties.length + 1) % 3 == 0) {
+        } else if (energyAmount >= 100) {
             duties.push(WORK);
             energyAmount = energyAmount - 100;
         } else {
@@ -124,16 +123,17 @@ function GetDiggerDuties() {
 }
 
 function MakeWorkCrew(spawnName) { 
-    let diggerCount = _.filter(Game.creeps, (creep) => creep.memory.role == 'digger' && creep.memory.spawnName == spawnName).length;
-    let scrumMasterCount = _.filter(Game.creeps, (creep) => creep.memory.role == 'scrum_master' && creep.memory.spawnName == spawnName).length;
+    const diggerCount = _.filter(Game.creeps, (creep) => creep.memory.role == 'digger' && creep.memory.spawnName == spawnName).length;
+    const scrumMasterCount = _.filter(Game.creeps, (creep) => creep.memory.role == 'scrum_master' && creep.memory.spawnName == spawnName).length;
 
     // If there is 1 digger and no scrum master make a scrum master.
     // else check if diggercount is greater than the STARTSCRUMAT.
-    if ((diggerCount > 1 && scrumMasterCount < 1) || (diggerCount >= DIGGERMAXCOUNT * 2)) {
+    if ((diggerCount >= 1 && scrumMasterCount < 1) || (diggerCount >= DIGGERMAXCOUNT * 2)) {
 
         MakeScrumMasters(spawnName);
 
-        if (scrumMasterCount != null && scrumMasterCount >= SCRUMMASTERMAXAMOUNT) {
+        console.log(diggerCount >= DIGGERMAXCOUNT * 2 + " digger count is: " + diggerCount + ". max count is: " + DIGGERMAXCOUNT)
+        if (scrumMasterCount >= SCRUMMASTERMAXAMOUNT && diggerCount >= DIGGERMAXCOUNT * 2) {
             MakeManagers(spawnName);
             MakeUpgraders(spawnName);
             MakeTransporters(spawnName);
@@ -257,24 +257,32 @@ function MakeBuilders(spawnName) {
 
 function BuilderDuties() {
     let duties = [];
+    let moveCount = 0;
+    let carryCount = 0;
+    let workCount = 0;
+
     let energyAmount = (extensionCount * 50) + 300;
     while (energyAmount > 0) {
         if (duties.length == 0) {
             duties.push(CARRY);
             duties.push(MOVE);
+            moveCount += 1;
+            carryCount += 1;
             energyAmount = energyAmount - 100;
         } 
         else if (energyAmount >= 100 && duties.length % 2 == 0) {
             duties.push(WORK);
+            workCount += 1;
             energyAmount = energyAmount - 100;
         } 
-        else if (energyAmount >= 100) {
-            duties.push(MOVE);
+        else if (energyAmount >= 50 && carryCount < moveCount) {
             duties.push(CARRY);
-            energyAmount = energyAmount - 100;
+            carryCount += 1;
+            energyAmount = energyAmount - 50;
         }
-        else if (energyAmount >= 50 && energyAmount < 100) {
+        else if (energyAmount >= 50 && moveCount <= carryCount) {
             duties.push(MOVE);
+            moveCount += 1;
             energyAmount = energyAmount - 50
         }
         else if (energyAmount < 50) {
